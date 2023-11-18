@@ -34,12 +34,17 @@ public class TickersController {
     }
 
     private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
+        String resultsCountParam = queryParams.getFirst("results-count");
+        Integer resultsCount = resultsCountParam == null ? 10 : Integer.parseInt(resultsCountParam);
+        String activeParam = queryParams.getFirst("active");
+        Boolean active = activeParam == null || Boolean.getBoolean(activeParam);
+
         return TickersSearchConfig.builder()
                 .cursor(queryParams.getFirst("cursor"))
                 .tickerSymbol(queryParams.getFirst("ticker-symbol"))
                 .searchTerm(queryParams.getFirst("search-term"))
-                .resultsCount(Integer.getInteger(queryParams.getFirst("results-count")))
-                .active(Boolean.getBoolean(queryParams.getFirst("active")))
+                .resultsCount(resultsCount)
+                .active(active)
                 .build();
     }
 

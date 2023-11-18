@@ -31,6 +31,6 @@ public class TickersService {
     private String getCursorFromTickersResponse(String uri) {
         MultiValueMap<String, String> parameters =
                 UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
-        return parameters.get("next_url").get(0);
+        return parameters.getFirst("cursor");
     }
 }
