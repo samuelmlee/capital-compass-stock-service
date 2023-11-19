@@ -32,6 +32,18 @@ public class TickersController {
             );
         });
     }
+    // TODO :
+    // ADD A CONFIG REGISTERING ALL ROUTER FUNCTIONS AND A LIST OF ALL HANDLERS FOR ALL PATHS
+    //        RouterFunction<ServerResponse> route = route()
+//                .path("/person", builder -> builder
+//                        .GET("/{id}", accept(APPLICATION_JSON), handler::getPerson)
+//                        .GET(accept(APPLICATION_JSON), handler::listPeople)
+//                        .POST(handler::createPerson))
+//                .build();
+//    https://docs.spring.io/spring-framework/reference/web/webflux-functional.html
+//    https://docs.spring.io/spring-framework/reference/web/webflux-functional.html#nested-routes
+    // CHECK Filtering Handler Functions nad nesting paths and handler functions
+
 
     private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
         String resultsCountParam = queryParams.getFirst("results-count");

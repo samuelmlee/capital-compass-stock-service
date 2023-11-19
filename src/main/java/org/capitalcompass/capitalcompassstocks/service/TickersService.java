@@ -21,7 +21,9 @@ public class TickersService {
         return referenceDataClient.getTickers(config).flatMap(response -> {
             String nextCursor = getCursorFromTickersResponse(response.nextUrl);
 
-            TickersResponseDTO dto = TickersResponseDTO.builder().results(response.results).nextCursor(nextCursor)
+            TickersResponseDTO dto = TickersResponseDTO.builder()
+                    .results(response.results)
+                    .nextCursor(nextCursor)
                     .build();
             return Mono.just(dto);
         });

@@ -22,11 +22,11 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
 
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
-                                          WebProperties.Resources resources,
                                           ApplicationContext applicationContext,
                                           ServerCodecConfigurer configurer) {
-        super(errorAttributes, resources, applicationContext);
-        this.setMessageWriters(configurer.getWriters());
+        super(errorAttributes, new WebProperties.Resources(), applicationContext);
+        super.setMessageWriters(configurer.getWriters());
+        super.setMessageReaders(configurer.getReaders());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
         Map<String, Object> errorPropertiesMap = getErrorAttributes(request,
                 ErrorAttributeOptions.defaults());
 
-        return ServerResponse.status((HttpStatus) errorPropertiesMap.get("status"))
+        return ServerResponse.status(HttpStatus.valueOf(500))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(errorPropertiesMap));
     }

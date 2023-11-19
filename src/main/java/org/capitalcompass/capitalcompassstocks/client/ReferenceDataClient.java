@@ -17,13 +17,12 @@ public class ReferenceDataClient {
     private final String tickersUri = "/v3/reference/tickers";
 
     public Mono<TickersResponse> getTickers(TickersSearchConfig config) {
-        try {
-            throw new PolygonServerErrorException("Polygon Server error");
-        } catch (PolygonServerErrorException e) {
-            return Mono.error(e);
-        }
-
-//        return Mono.error(new PolygonServerErrorException("Polygon Server error"));
+        return Mono.error(new PolygonServerErrorException("Polygon Server error"));
+//        try {
+//            throw new PolygonServerErrorException("Polygon Server error");
+//        } catch (PolygonServerErrorException e) {
+//            return Mono.error(e);
+//        }
 //        return Mono.error(new PolygonClientErrorException("Polygon request param invalid error"));
 //        return webClient.get().uri(uri ->
 //                        uri.path(tickersUri)
