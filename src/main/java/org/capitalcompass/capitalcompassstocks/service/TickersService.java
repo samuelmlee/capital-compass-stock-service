@@ -27,7 +27,6 @@ public class TickersService {
                     .build();
             return Mono.just(dto);
         });
-
     }
 
     private String getCursorFromTickersResponse(String uri) {

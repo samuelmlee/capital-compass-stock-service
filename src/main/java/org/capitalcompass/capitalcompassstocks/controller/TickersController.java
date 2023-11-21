@@ -18,10 +18,17 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 public class TickersController {
 
     private final TickersService tickersService;
-
-
+    
     public Mono<ServerResponse> getTickers(ServerRequest request) {
         TickersSearchConfig config = fromQueryParamsToSearchConfig(request.queryParams());
+        return tickersService.getTickers(config).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(responseDTO)
+        );
+    }
+
+    public Mono<ServerResponse> getTickersByCursor(ServerRequest request) {
+        String cursor = request.pathVariable("cursor");
+        TickersSearchConfig config = TickersSearchConfig.builder().cursor(cursor).build();
         return tickersService.getTickers(config).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO)
         );

@@ -19,7 +19,7 @@ public class TickersRouteConfig {
         return route().path(TICKERS_PATH, builder1 -> builder1
                         .nest(accept(MediaType.APPLICATION_JSON), builder2 -> builder2
                                 .GET(tickersController::getTickers)
-                                .GET("/cursor/{cursor}", tickersController::getTickers)))
+                                .GET("/{cursor}", tickersController::getTickersByCursor)))
                 .build();
 
     }
