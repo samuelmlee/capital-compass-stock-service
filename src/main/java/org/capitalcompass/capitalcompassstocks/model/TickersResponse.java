@@ -9,6 +9,8 @@ public class TickersResponse {
     @JsonProperty("request_id")
     public String requestId;
     public int count;
+
+    // See https://polygon.io/blog/api-pagination-patterns
     @JsonProperty("next_url")
     public String nextUrl;
 }
