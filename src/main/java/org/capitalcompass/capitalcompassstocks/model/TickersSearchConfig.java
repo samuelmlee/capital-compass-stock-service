@@ -10,14 +10,13 @@ import lombok.ToString;
 @Builder
 @ToString
 public class TickersSearchConfig {
-    private String cursor;
 
-    private String tickerSymbol;
+    private String ticker;
 
     private String searchTerm;
 
-    private Integer resultsCount = 50;
+    private Integer resultsCount = 100;
 
-    private Boolean active = true;
+    private String type;
 
 }

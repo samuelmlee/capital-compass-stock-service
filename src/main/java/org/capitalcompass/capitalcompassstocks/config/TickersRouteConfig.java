@@ -18,8 +18,8 @@ public class TickersRouteConfig {
         String TICKERS_PATH = "/stocks/tickers";
         return route().path(TICKERS_PATH, builder1 -> builder1
                         .nest(accept(MediaType.APPLICATION_JSON), builder2 -> builder2
-                                .GET(tickersController::getTickers)
                                 .GET("/{cursor}", tickersController::getTickersByCursor)))
+                .GET(tickersController::getTickers)
                 .build();
 
     }

@@ -19,13 +19,23 @@ public class ReferenceDataClient {
     public Mono<TickersResponse> getTickers(TickersSearchConfig config) {
 //        return Mono.error(new PolygonServerErrorException("Polygon Server error"));
 //        return Mono.error(new PolygonClientErrorException("Polygon request param invalid error"));
+        return webClient.get().uri(uri ->
+                        uri.path(tickersUri)
+//                                .queryParam("search", config.getSearchTerm())
+//                                .queryParam("type", config.getType())
+                                .queryParam("active", true)
+                                .queryParam("limit", 100)
+                                .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(TickersResponse.class);
+    }
+
+    public Mono<TickersResponse> getTickersByCursor(String cursor) {
+        // TODO: handling for exceeding the request limit per minute
 
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
-                                .queryParam("active", config.getActive())
-                                .queryParam("cursor", config.getCursor())
-                                .queryParam("search", config.getSearchTerm())
-                                .queryParam("limit", config.getResultsCount())
+                                .queryParam("cursor", cursor)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(TickersResponse.class);

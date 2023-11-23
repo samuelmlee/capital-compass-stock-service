@@ -8,6 +8,7 @@ spring:
   application:
     name: stocks
 
+
 eureka:
   client:
     service-url:
@@ -21,7 +22,7 @@ api:
     base-url: https://api.polygon.io
 
 
-    #logging:
-    #  level:
-    #    org.springframework.security: TRACE
-#    root: DEBUG
+    logging:
+      level:
+        #        org.springframework.security: TRACE
+        root: DEBUG

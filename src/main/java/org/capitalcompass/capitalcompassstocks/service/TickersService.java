@@ -16,9 +16,21 @@ public class TickersService {
 
     private final ReferenceDataClient referenceDataClient;
 
-
     public Mono<TickersResponseDTO> getTickers(TickersSearchConfig config) {
         return referenceDataClient.getTickers(config).flatMap(response -> {
+            String nextCursor = getCursorFromTickersResponse(response.nextUrl);
+
+            TickersResponseDTO dto = TickersResponseDTO.builder()
+                    .results(response.results)
+                    .nextCursor(nextCursor)
+                    .build();
+            return Mono.just(dto);
+        });
+    }
+
+    public Mono<TickersResponseDTO> getTickersByCursor(String cursor) {
+
+        return referenceDataClient.getTickersByCursor(cursor).flatMap(response -> {
             String nextCursor = getCursorFromTickersResponse(response.nextUrl);
 
             TickersResponseDTO dto = TickersResponseDTO.builder()
