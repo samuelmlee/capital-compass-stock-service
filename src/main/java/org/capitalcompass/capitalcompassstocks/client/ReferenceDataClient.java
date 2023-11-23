@@ -21,10 +21,9 @@ public class ReferenceDataClient {
 //        return Mono.error(new PolygonClientErrorException("Polygon request param invalid error"));
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
-//                                .queryParam("search", config.getSearchTerm())
-//                                .queryParam("type", config.getType())
+                                .queryParam("search", config.getSearchTerm())
+                                .queryParam("type", config.getType())
                                 .queryParam("active", true)
-                                .queryParam("limit", 100)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(TickersResponse.class);
