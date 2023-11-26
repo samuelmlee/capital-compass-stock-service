@@ -34,7 +34,6 @@ public class TickersController {
     }
 
     private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
-
         return TickersSearchConfig.builder()
                 .ticker(queryParams.getFirst("ticker"))
                 .searchTerm(queryParams.getFirst("search-term"))

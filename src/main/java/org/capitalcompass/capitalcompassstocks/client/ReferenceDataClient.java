@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 public class ReferenceDataClient {
 
     private final WebClient webClient;
-
     private final String tickersUri = "/v3/reference/tickers";
 
     public Mono<TickersResponse> getTickers(TickersSearchConfig config) {

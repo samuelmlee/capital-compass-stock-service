@@ -42,8 +42,12 @@ public class TickersService {
     }
 
     private String getCursorFromTickersResponse(String uri) {
-        MultiValueMap<String, String> parameters =
-                UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
-        return parameters.getFirst("cursor");
+        try {
+            MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
+            String cursor = parameters.getFirst("cursor");
+            return cursor != null ? cursor : "";
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
     }
 }
