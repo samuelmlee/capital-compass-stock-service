@@ -33,12 +33,15 @@ public class TickersController {
         );
     }
 
+    public Mono<ServerResponse> getTickerTypes(ServerRequest request) {
+        return tickersService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(responseDTO));
+    }
+
     private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
         return TickersSearchConfig.builder()
                 .ticker(queryParams.getFirst("ticker"))
                 .searchTerm(queryParams.getFirst("search-term"))
                 .build();
     }
-
-
 }

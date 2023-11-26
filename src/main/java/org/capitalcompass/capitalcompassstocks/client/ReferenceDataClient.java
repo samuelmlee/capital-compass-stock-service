@@ -1,6 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.client;
 
 import lombok.RequiredArgsConstructor;
+import org.capitalcompass.capitalcompassstocks.model.TickerTypesResponse;
 import org.capitalcompass.capitalcompassstocks.model.TickersResponse;
 import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
 import org.springframework.http.MediaType;
@@ -29,14 +30,20 @@ public class ReferenceDataClient {
     }
 
     public Mono<TickersResponse> getTickersByCursor(String cursor) {
-        // TODO: handling for exceeding the request limit per minute
-
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
                                 .queryParam("cursor", cursor)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(TickersResponse.class);
+    }
+
+    public Mono<TickerTypesResponse> getTickerTypes() {
+        return webClient.get().uri(uri ->
+                        uri.path(tickersUri + "/types")
+                                .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(TickerTypesResponse.class);
     }
 
 }

@@ -16,10 +16,13 @@ public class TickersRouteConfig {
     @Bean
     RouterFunction<ServerResponse> routes(TickersController tickersController) {
         String TICKERS_PATH = "/stocks/tickers";
-        return route().path(TICKERS_PATH, builder1 -> builder1
-                        .nest(accept(MediaType.APPLICATION_JSON), builder2 -> builder2
-                                .GET("/{cursor}", tickersController::getTickersByCursor)))
-                .GET(tickersController::getTickers)
+        return route()
+                .path(TICKERS_PATH, builder -> builder
+                        .nest(accept(MediaType.APPLICATION_JSON), nestedBuilder -> nestedBuilder
+                                .GET("/types", tickersController::getTickerTypes)
+                                .GET("/{cursor}", tickersController::getTickersByCursor))
+                        .GET(tickersController::getTickers)
+                )
                 .build();
 
     }

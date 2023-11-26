@@ -2,6 +2,7 @@ package org.capitalcompass.capitalcompassstocks.service;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.client.ReferenceDataClient;
+import org.capitalcompass.capitalcompassstocks.model.TickerTypesResponseDTO;
 import org.capitalcompass.capitalcompassstocks.model.TickersResponseDTO;
 import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,16 @@ public class TickersService {
                     .nextCursor(nextCursor)
                     .build();
             return Mono.just(dto);
+        });
+    }
+
+    public Mono<TickerTypesResponseDTO> getTickerTypes() {
+        return referenceDataClient.getTickerTypes().flatMap(response -> {
+            TickerTypesResponseDTO dto = TickerTypesResponseDTO.builder()
+                    .results(response.results)
+                    .build();
+            return Mono.just(dto);
+
         });
     }
 
