@@ -23,6 +23,7 @@ public class ReferenceDataClient {
                         uri.path(tickersUri)
                                 .queryParam("search", config.getSearchTerm())
                                 .queryParam("type", config.getType())
+                                .queryParam("ticker", config.getTicker())
                                 .queryParam("active", true)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)

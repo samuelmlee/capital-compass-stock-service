@@ -11,6 +11,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import java.util.Set;
+
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 @Controller
@@ -19,8 +23,15 @@ public class TickersController {
 
     private final TickersService tickersService;
 
+    private final Validator validator;
+
     public Mono<ServerResponse> getTickers(ServerRequest request) {
         TickersSearchConfig config = fromQueryParamsToSearchConfig(request.queryParams());
+        Set<ConstraintViolation<TickersSearchConfig>> violations = validator.validate(config);
+        if (!violations.isEmpty()) {
+            return ServerResponse.badRequest().bodyValue(violations);
+        }
+
         return tickersService.getTickers(config).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO)
         );
@@ -33,7 +44,7 @@ public class TickersController {
         );
     }
 
-    public Mono<ServerResponse> getTickerTypes(ServerRequest request) {
+    public Mono<ServerResponse> getTickerTypes() {
         return tickersService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO));
     }
@@ -42,6 +53,7 @@ public class TickersController {
         return TickersSearchConfig.builder()
                 .ticker(queryParams.getFirst("ticker"))
                 .searchTerm(queryParams.getFirst("search-term"))
+                .type(queryParams.getFirst("type"))
                 .build();
     }
 }
