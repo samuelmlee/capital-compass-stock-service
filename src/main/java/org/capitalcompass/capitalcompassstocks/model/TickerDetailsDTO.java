@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @Builder
 public class TickerDetailsDTO {
-    private TickersResult results;
+    private TickerDetailsResult results;
 }

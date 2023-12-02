@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TickerDetailsResponse {
-    private TickersResult results;
+    private TickerDetailsResult results;
     private String status;
 }
