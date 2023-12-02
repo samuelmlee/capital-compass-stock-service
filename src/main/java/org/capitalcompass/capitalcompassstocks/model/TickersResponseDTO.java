@@ -13,8 +13,8 @@ import java.util.ArrayList;
 @Builder
 public class TickersResponseDTO {
 
-    public ArrayList<TickersResult> results;
+    private ArrayList<TickersResult> results;
 
-    public String nextCursor;
-    
+    private String nextCursor;
+
 }

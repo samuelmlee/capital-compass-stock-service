@@ -25,16 +25,24 @@ public class TickersController {
 
     private final Validator validator;
 
-    public Mono<ServerResponse> getTickers(ServerRequest request) {
+    public Mono<ServerResponse> getTickersByParams(ServerRequest request) {
         TickersSearchConfig config = fromQueryParamsToSearchConfig(request.queryParams());
         Set<ConstraintViolation<TickersSearchConfig>> violations = validator.validate(config);
         if (!violations.isEmpty()) {
             return ServerResponse.badRequest().bodyValue(violations);
         }
 
-        return tickersService.getTickers(config).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
+        return tickersService.getTickers(config).flatMap(responseDTO -> ok()
+                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO)
         );
+    }
+
+    public Mono<ServerResponse> getTickerDetails(ServerRequest request) {
+        String tickerSymbol = request.pathVariable("ticker");
+        return tickersService.getTickerDetails(tickerSymbol).flatMap(detailsDTO -> ok()
+                .contentType(MediaType.APPLICATION_JSON).bodyValue(detailsDTO));
+
     }
 
     public Mono<ServerResponse> getTickersByCursor(ServerRequest request) {
@@ -44,7 +52,7 @@ public class TickersController {
         );
     }
 
-    public Mono<ServerResponse> getTickerTypes() {
+    public Mono<ServerResponse> getTickerTypes(ServerRequest request) {
         return tickersService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO));
     }

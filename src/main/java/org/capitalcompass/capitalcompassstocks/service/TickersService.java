@@ -2,6 +2,7 @@ package org.capitalcompass.capitalcompassstocks.service;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.client.ReferenceDataClient;
+import org.capitalcompass.capitalcompassstocks.model.TickerDetailsDTO;
 import org.capitalcompass.capitalcompassstocks.model.TickerTypesResponseDTO;
 import org.capitalcompass.capitalcompassstocks.model.TickersResponseDTO;
 import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
@@ -19,11 +20,20 @@ public class TickersService {
 
     public Mono<TickersResponseDTO> getTickers(TickersSearchConfig config) {
         return referenceDataClient.getTickers(config).flatMap(response -> {
-            String nextCursor = getCursorFromTickersResponse(response.nextUrl);
+            String nextCursor = getCursorFromTickersResponse(response.getNextUrl());
 
             TickersResponseDTO dto = TickersResponseDTO.builder()
-                    .results(response.results)
+                    .results(response.getResults())
                     .nextCursor(nextCursor)
+                    .build();
+            return Mono.just(dto);
+        });
+    }
+
+    public Mono<TickerDetailsDTO> getTickerDetails(String tickerSymbol) {
+        return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
+            TickerDetailsDTO dto = TickerDetailsDTO.builder()
+                    .results(response.getResults())
                     .build();
             return Mono.just(dto);
         });
@@ -32,10 +42,10 @@ public class TickersService {
     public Mono<TickersResponseDTO> getTickersByCursor(String cursor) {
 
         return referenceDataClient.getTickersByCursor(cursor).flatMap(response -> {
-            String nextCursor = getCursorFromTickersResponse(response.nextUrl);
+            String nextCursor = getCursorFromTickersResponse(response.getNextUrl());
 
             TickersResponseDTO dto = TickersResponseDTO.builder()
-                    .results(response.results)
+                    .results(response.getResults())
                     .nextCursor(nextCursor)
                     .build();
             return Mono.just(dto);
@@ -45,7 +55,7 @@ public class TickersService {
     public Mono<TickerTypesResponseDTO> getTickerTypes() {
         return referenceDataClient.getTickerTypes().flatMap(response -> {
             TickerTypesResponseDTO dto = TickerTypesResponseDTO.builder()
-                    .results(response.results)
+                    .results(response.getResults())
                     .build();
             return Mono.just(dto);
 

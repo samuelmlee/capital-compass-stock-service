@@ -9,11 +9,15 @@ import lombok.ToString;
 @Setter
 @ToString
 public class TickersResult {
-    public String ticker;
-    public String name;
-    public String market;
+    private String ticker;
+
+    private String name;
+
+    private String market;
+
     @JsonProperty(value = "currency_name")
-    public String currencyName;
+    private String currencyName;
+    
     @JsonProperty(value = "primary_exchange")
     private String primaryExchange;
 }

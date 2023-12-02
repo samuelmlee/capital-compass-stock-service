@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TypeResult {
-    private String code;
-    private String description;
+public class TickerDetailsResponse {
+    private TickersResult results;
+    private String status;
 }

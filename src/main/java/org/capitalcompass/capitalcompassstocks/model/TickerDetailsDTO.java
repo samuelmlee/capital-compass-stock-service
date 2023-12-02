@@ -1,11 +1,12 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class TypeResult {
-    private String code;
-    private String description;
+@Builder
+public class TickerDetailsDTO {
+    private TickersResult results;
 }

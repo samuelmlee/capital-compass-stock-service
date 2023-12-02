@@ -1,8 +1,13 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 
+@Getter
+@Setter
 public class TickerTypesResponse {
-    public ArrayList<TypeResult> results;
-    public int count;
+    private ArrayList<TypeResult> results;
+    private int count;
 }

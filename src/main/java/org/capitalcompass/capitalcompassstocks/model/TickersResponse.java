@@ -1,16 +1,23 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 
+@Getter
+@Setter
 public class TickersResponse {
-    public ArrayList<TickersResult> results;
+    private ArrayList<TickersResult> results;
+
     @JsonProperty("request_id")
-    public String requestId;
-    public int count;
+    private String requestId;
+    
+    private Integer count;
 
     // See https://polygon.io/blog/api-pagination-patterns
     @JsonProperty("next_url")
-    public String nextUrl;
+    private String nextUrl;
+
 }

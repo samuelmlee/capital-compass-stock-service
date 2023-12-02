@@ -10,12 +10,18 @@ import java.util.ArrayList;
 @Setter
 @ToString
 public class AggregatesResponse {
-    public String ticker;
-    public int queryCount;
-    public int resultsCount;
-    public boolean adjusted;
-    public ArrayList<AggregatesResult> results;
-    public String status;
-    public String request_id;
-    public int count;
+    private String ticker;
+
+    private Integer queryCount;
+
+    private Integer resultsCount;
+
+    private Boolean adjusted;
+    private ArrayList<AggregatesResult> results;
+
+    private String status;
+
+    private String request_id;
+
+    private Integer count;
 }

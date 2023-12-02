@@ -10,8 +10,8 @@ import lombok.ToString;
 @ToString
 public class AggregatesResult {
     @JsonProperty("t")
-    public long timestamp;
+    private Long timestamp;
 
     @JsonProperty("c")
-    public int closingPrice;
+    private Integer closingPrice;
 }
