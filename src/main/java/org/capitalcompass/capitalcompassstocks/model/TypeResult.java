@@ -1,10 +1,8 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class TypeResult {
     private String code;
     private String description;

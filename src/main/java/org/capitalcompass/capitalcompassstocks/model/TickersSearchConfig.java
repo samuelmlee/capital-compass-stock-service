@@ -1,20 +1,16 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
-@Getter
-@Setter
+@Data
 @Builder
-@ToString
 public class TickersSearchConfig {
-    
+
     @Size(max = 5)
     private String ticker;
 

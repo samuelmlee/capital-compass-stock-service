@@ -1,13 +1,9 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 public class TickersResult {
     private String ticker;
 
@@ -17,7 +13,7 @@ public class TickersResult {
 
     @JsonProperty(value = "currency_name")
     private String currencyName;
-    
+
     @JsonProperty(value = "primary_exchange")
     private String primaryExchange;
 }

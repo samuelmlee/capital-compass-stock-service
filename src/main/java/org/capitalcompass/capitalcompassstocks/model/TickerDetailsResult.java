@@ -1,13 +1,9 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 public class TickerDetailsResult {
     private String ticker;
 
@@ -36,7 +32,7 @@ public class TickerDetailsResult {
 
     @JsonProperty(value = "list_date")
     private String listDate;
-    
+
     @JsonProperty(value = "share_class_shares_outstanding")
     private Long shareClassSharesOutstanding;
 

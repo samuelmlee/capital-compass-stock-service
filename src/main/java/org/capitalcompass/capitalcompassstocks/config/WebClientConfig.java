@@ -1,9 +1,8 @@
 package org.capitalcompass.capitalcompassstocks.config;
 
+import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.capitalcompassstocks.exception.PolygonClientErrorException;
 import org.capitalcompass.capitalcompassstocks.exception.PolygonServerErrorException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,10 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Configuration
+@Log4j2
 public class WebClientConfig {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(WebClientConfig.class);
-
 
     @Value("${api.polygon.secret}")
     private String polygonSecret;
@@ -55,13 +52,13 @@ public class WebClientConfig {
 
     ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            if (LOGGER.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 StringBuilder sb = new StringBuilder("Request: \n");
                 sb.append(clientRequest.url()).append("\n");
                 clientRequest
                         .headers()
                         .forEach((name, values) -> values.forEach(sb::append));
-                LOGGER.debug(sb.toString());
+                log.debug(sb.toString());
             }
             return Mono.just(clientRequest);
         });
@@ -69,13 +66,13 @@ public class WebClientConfig {
 
     ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            if (LOGGER.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 StringBuilder sb = new StringBuilder("Response: \n");
                 sb.append(clientResponse.statusCode()).append("\n");
                 clientResponse
                         .headers().asHttpHeaders()
                         .forEach((name, values) -> values.forEach(sb::append));
-                LOGGER.debug(sb.toString());
+                log.debug(sb.toString());
             }
             return Mono.just(clientResponse);
         });

@@ -1,15 +1,11 @@
 package org.capitalcompass.capitalcompassstocks.model;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.util.ArrayList;
 
-@Getter
-@Setter
-@ToString
+@Data
 @Builder
 public class TickersResponseDTO {
 
