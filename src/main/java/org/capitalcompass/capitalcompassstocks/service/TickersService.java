@@ -33,7 +33,7 @@ public class TickersService {
     public Mono<TickerDetailsDTO> getTickerDetails(String tickerSymbol) {
         return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
             TickerDetailsDTO dto = TickerDetailsDTO.builder()
-                    .results(response.getResults())
+                    .result(response.getResults())
                     .build();
             return Mono.just(dto);
         });

@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @Builder
 public class TickerDetailsDTO {
-    private TickerDetailsResult results;
+    private TickerDetailsResult result;
 }
