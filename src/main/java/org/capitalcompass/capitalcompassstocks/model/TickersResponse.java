@@ -9,13 +9,14 @@ import java.util.ArrayList;
 public class TickersResponse {
     private ArrayList<TickersResult> results;
 
-    @JsonProperty("request_id")
-    private String requestId;
-
     private Integer count;
 
+    @JsonProperty(value = "next_url")
+    public void setNextUrl(String nextUrl) {
+        this.nextUrl = nextUrl;
+    }
+
     // See https://polygon.io/blog/api-pagination-patterns
-    @JsonProperty("next_url")
     private String nextUrl;
 
 }

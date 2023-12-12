@@ -11,9 +11,27 @@ public class TickersResult {
 
     private String market;
 
-    @JsonProperty(value = "currency_name")
+    @JsonProperty("currencyName")
+    public String getCurrencyName() {
+        return currencyName;
+    }
+
+    @JsonProperty("currency_name")
+    public void setCurrencyName(String currencyName) {
+        this.currencyName = currencyName;
+    }
+
     private String currencyName;
 
-    @JsonProperty(value = "primary_exchange")
+    @JsonProperty("primaryExchange")
+    public String getPrimaryExchange() {
+        return primaryExchange;
+    }
+
+    @JsonProperty("primary_exchange")
+    public void setPrimaryExchange(String primaryExchange) {
+        this.primaryExchange = primaryExchange;
+    }
+
     private String primaryExchange;
 }

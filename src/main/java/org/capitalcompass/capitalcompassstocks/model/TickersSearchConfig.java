@@ -20,7 +20,6 @@ public class TickersSearchConfig {
     @Max(value = 1000)
     private Integer resultsCount;
 
-
     // TODO: cache ticker types, update cache on start
     private String type;
 
