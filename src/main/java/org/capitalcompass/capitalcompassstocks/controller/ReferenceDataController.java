@@ -3,7 +3,7 @@ package org.capitalcompass.capitalcompassstocks.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
-import org.capitalcompass.capitalcompassstocks.service.TickersService;
+import org.capitalcompass.capitalcompassstocks.service.ReferenceDataService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
@@ -19,9 +19,9 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 
 @Controller
 @RequiredArgsConstructor
-public class TickersController {
+public class ReferenceDataController {
 
-    private final TickersService tickersService;
+    private final ReferenceDataService referenceDataService;
 
     private final Validator validator;
 
@@ -32,7 +32,7 @@ public class TickersController {
             return ServerResponse.badRequest().bodyValue(violations);
         }
 
-        return tickersService.getTickers(config).flatMap(responseDTO -> ok()
+        return referenceDataService.getTickers(config).flatMap(responseDTO -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO)
         );
@@ -40,20 +40,20 @@ public class TickersController {
 
     public Mono<ServerResponse> getTickerDetails(ServerRequest request) {
         String tickerSymbol = request.pathVariable("ticker");
-        return tickersService.getTickerDetails(tickerSymbol).flatMap(detailsDTO -> ok()
+        return referenceDataService.getTickerDetails(tickerSymbol).flatMap(detailsDTO -> ok()
                 .contentType(MediaType.APPLICATION_JSON).bodyValue(detailsDTO));
 
     }
 
     public Mono<ServerResponse> getTickersByCursor(ServerRequest request) {
         String cursor = request.pathVariable("cursor");
-        return tickersService.getTickersByCursor(cursor).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
+        return referenceDataService.getTickersByCursor(cursor).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO)
         );
     }
 
     public Mono<ServerResponse> getTickerTypes(ServerRequest request) {
-        return tickersService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
+        return referenceDataService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(responseDTO));
     }
 

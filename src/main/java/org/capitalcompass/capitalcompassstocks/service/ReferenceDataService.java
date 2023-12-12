@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class TickersService {
+public class ReferenceDataService {
 
     private final ReferenceDataClient referenceDataClient;
 

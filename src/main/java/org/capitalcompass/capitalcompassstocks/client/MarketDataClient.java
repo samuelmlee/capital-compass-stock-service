@@ -16,7 +16,7 @@ public class MarketDataClient {
 
     private final String snapshotsUri = "/v2/snapshot/locale/us/markets/stocks";
 
-    public Mono<TickerSnapShotResponse> getTickerSnapShots(String tickerSymbol) {
+    public Mono<TickerSnapShotResponse> getTickerSnapShot(String tickerSymbol) {
         return webClient.get().uri(snapshotsUri + "/tickers/{symbol}", tickerSymbol)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(TickerSnapShotResponse.class);
