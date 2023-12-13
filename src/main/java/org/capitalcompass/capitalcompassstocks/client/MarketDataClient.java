@@ -2,10 +2,13 @@ package org.capitalcompass.capitalcompassstocks.client;
 
 
 import lombok.RequiredArgsConstructor;
+import org.capitalcompass.capitalcompassstocks.model.AllTickerSnapshotsResponse;
 import org.capitalcompass.capitalcompassstocks.model.TickerSnapShotResponse;
+import org.capitalcompass.capitalcompassstocks.model.TickerSnapshot;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -20,6 +23,13 @@ public class MarketDataClient {
         return webClient.get().uri(snapshotsUri + "/tickers/{symbol}", tickerSymbol)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(TickerSnapShotResponse.class);
+    }
+
+    public Flux<TickerSnapshot> getAllTickerSnapShots() {
+        return webClient.get().uri(snapshotsUri + "/tickers")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(AllTickerSnapshotsResponse.class)
+                .flatMapMany(response -> Flux.fromIterable(response.getTickers()));
     }
 
 

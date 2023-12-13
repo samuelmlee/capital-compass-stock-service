@@ -2,8 +2,10 @@ package org.capitalcompass.capitalcompassstocks.service;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.client.MarketDataClient;
+import org.capitalcompass.capitalcompassstocks.model.TickerSnapshot;
 import org.capitalcompass.capitalcompassstocks.model.TickerSnapshotDTO;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -19,5 +21,10 @@ public class MarketDataService {
                     .build();
             return Mono.just(dto);
         });
+    }
+
+    public Flux<TickerSnapshot> getAllTickerSnapshots() {
+        return marketDataClient.getAllTickerSnapShots();
+
     }
 }
