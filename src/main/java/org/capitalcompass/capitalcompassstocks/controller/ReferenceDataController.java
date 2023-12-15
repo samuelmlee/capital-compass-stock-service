@@ -59,7 +59,7 @@ public class ReferenceDataController {
 
     private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
         return TickersSearchConfig.builder()
-                .ticker(queryParams.getFirst("ticker"))
+                .symbol(queryParams.getFirst("ticker"))
                 .searchTerm(queryParams.getFirst("search-term"))
                 .type(queryParams.getFirst("type"))
                 .build();

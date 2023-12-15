@@ -5,11 +5,21 @@ import lombok.Data;
 
 @Data
 public class TickerDetailsResult {
-    private String ticker;
+    private String symbol;
 
     private String name;
 
     private String market;
+    private String primaryExchange;
+    private String currencyName;
+    private String type;
+    private String description;
+    private Long marketCap;
+    private String homePageUrl;
+    private Integer totalEmployees;
+    private String listDate;
+    private Long shareClassSharesOutstanding;
+    private Long weightedSharesOutstanding;
 
     @JsonProperty(value = "primaryExchange")
     public String getPrimaryExchange() {
@@ -21,9 +31,6 @@ public class TickerDetailsResult {
         this.primaryExchange = primaryExchange;
     }
 
-    private String primaryExchange;
-
-
     @JsonProperty(value = "currencyName")
     public String getCurrencyName() {
         return currencyName;
@@ -33,12 +40,6 @@ public class TickerDetailsResult {
     public void setCurrencyName(String currencyName) {
         this.currencyName = currencyName;
     }
-
-    private String currencyName;
-
-    private String type;
-
-    private String description;
 
     @JsonProperty(value = "marketCap")
     public Long getMarketCap() {
@@ -50,8 +51,6 @@ public class TickerDetailsResult {
         this.marketCap = marketCap;
     }
 
-    private Long marketCap;
-
     @JsonProperty(value = "homepageUrl")
     public String getHomePageUrl() {
         return homePageUrl;
@@ -61,8 +60,6 @@ public class TickerDetailsResult {
     public void setHomePageUrl(String homePageUrl) {
         this.homePageUrl = homePageUrl;
     }
-
-    private String homePageUrl;
 
     @JsonProperty(value = "totalEmployees")
     public Integer getTotalEmployees() {
@@ -74,8 +71,6 @@ public class TickerDetailsResult {
         this.totalEmployees = totalEmployees;
     }
 
-    private Integer totalEmployees;
-
     @JsonProperty(value = "listDate")
     public String getListDate() {
         return listDate;
@@ -85,8 +80,6 @@ public class TickerDetailsResult {
     public void setListDate(String listDate) {
         this.listDate = listDate;
     }
-
-    private String listDate;
 
     @JsonProperty(value = "shareClassSharesOutstanding")
     public Long getShareClassSharesOutstanding() {
@@ -98,8 +91,6 @@ public class TickerDetailsResult {
         this.shareClassSharesOutstanding = shareClassSharesOutstanding;
     }
 
-    private Long shareClassSharesOutstanding;
-
     @JsonProperty(value = "weightedSharesOutstanding")
     public Long getWeightedSharesOutstanding() {
         return weightedSharesOutstanding;
@@ -109,7 +100,5 @@ public class TickerDetailsResult {
     public void setWeightedSharesOutstanding(Long weightedSharesOutstanding) {
         this.weightedSharesOutstanding = weightedSharesOutstanding;
     }
-
-    private Long weightedSharesOutstanding;
 
 }

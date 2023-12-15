@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 public class TickersSearchConfig {
 
     @Size(max = 5)
-    private String ticker;
+    private String symbol;
 
     private String searchTerm;
 

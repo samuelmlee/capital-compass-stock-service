@@ -6,7 +6,7 @@ import lombok.Data;
 public class TickerSnapshot {
 
     private Long updated;
-    private String ticker;
+    private String symbol;
     private DailyBar day;
     private DailyBar prevDay;
 }

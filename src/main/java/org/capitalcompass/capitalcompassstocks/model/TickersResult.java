@@ -5,11 +5,13 @@ import lombok.Data;
 
 @Data
 public class TickersResult {
-    private String ticker;
+    private String symbol;
 
     private String name;
 
     private String market;
+    private String currencyName;
+    private String primaryExchange;
 
     @JsonProperty("currencyName")
     public String getCurrencyName() {
@@ -21,8 +23,6 @@ public class TickersResult {
         this.currencyName = currencyName;
     }
 
-    private String currencyName;
-
     @JsonProperty("primaryExchange")
     public String getPrimaryExchange() {
         return primaryExchange;
@@ -32,6 +32,4 @@ public class TickersResult {
     public void setPrimaryExchange(String primaryExchange) {
         this.primaryExchange = primaryExchange;
     }
-
-    private String primaryExchange;
 }
