@@ -5,10 +5,9 @@ import lombok.Data;
 
 @Data
 public class TickerDetailsResult {
+
     private String symbol;
-
     private String name;
-
     private String market;
     private String primaryExchange;
     private String currencyName;
@@ -20,6 +19,16 @@ public class TickerDetailsResult {
     private String listDate;
     private Long shareClassSharesOutstanding;
     private Long weightedSharesOutstanding;
+
+    @JsonProperty("symbol")
+    public String getSymbol() {
+        return symbol;
+    }
+
+    @JsonProperty("ticker")
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
 
     @JsonProperty(value = "primaryExchange")
     public String getPrimaryExchange() {
