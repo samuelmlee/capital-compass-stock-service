@@ -1,7 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.model.TickerSnapshotDTO;
+import org.capitalcompass.capitalcompassstocks.model.TickerSnapshot;
 import org.capitalcompass.capitalcompassstocks.service.MarketDataService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
@@ -35,6 +35,6 @@ public class MarketDataController {
         return route(GET(TICKER_SNAPSHOT_URL), request ->
                 ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(marketDataService.getAllTickerSnapshots(), TickerSnapshotDTO.class));
+                        .body(marketDataService.getAllTickerSnapshots(), TickerSnapshot.class));
     }
 }
