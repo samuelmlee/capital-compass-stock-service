@@ -1,4 +1,4 @@
-package org.capitalcompass.capitalcompassstocks.model;
+package org.capitalcompass.capitalcompassstocks.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @Builder
-public class TickersSearchConfig {
+public class TickersSearchConfigDTO {
 
     @Size(max = 5)
     private String symbol;

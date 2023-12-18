@@ -2,7 +2,8 @@ package org.capitalcompass.capitalcompassstocks.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
+import org.capitalcompass.capitalcompassstocks.dto.TickerRequestDTO;
+import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
 import org.capitalcompass.capitalcompassstocks.service.ReferenceDataService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -26,15 +27,15 @@ public class ReferenceDataController {
     private final Validator validator;
 
     public Mono<ServerResponse> getTickersByParams(ServerRequest request) {
-        TickersSearchConfig config = fromQueryParamsToSearchConfig(request.queryParams());
-        Set<ConstraintViolation<TickersSearchConfig>> violations = validator.validate(config);
+        TickersSearchConfigDTO config = fromQueryParamsToSearchConfig(request.queryParams());
+        Set<ConstraintViolation<TickersSearchConfigDTO>> violations = validator.validate(config);
         if (!violations.isEmpty()) {
             return ServerResponse.badRequest().bodyValue(violations);
         }
 
-        return referenceDataService.getTickers(config).flatMap(responseDTO -> ok()
+        return referenceDataService.getTickers(config).flatMap(tickersDTO -> ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(responseDTO)
+                .bodyValue(tickersDTO)
         );
     }
 
@@ -42,6 +43,21 @@ public class ReferenceDataController {
         String tickerSymbol = request.pathVariable("ticker");
         return referenceDataService.getTickerDetails(tickerSymbol).flatMap(detailsDTO -> ok()
                 .contentType(MediaType.APPLICATION_JSON).bodyValue(detailsDTO));
+
+    }
+
+    public Mono<ServerResponse> registerTicker(ServerRequest request) {
+        Mono<TickerRequestDTO> tickerRequestMono = request.bodyToMono(TickerRequestDTO.class);
+
+        return tickerRequestMono.flatMap(tickerRequestDTO -> {
+            TickersSearchConfigDTO config = TickersSearchConfigDTO.builder()
+                    .symbol(tickerRequestDTO.getSymbol())
+                    .build();
+
+            return referenceDataService.registerTicker(config).flatMap(tickerDTO -> ok()
+                    .contentType(MediaType.APPLICATION_JSON).bodyValue(tickerDTO));
+        });
+
 
     }
 
@@ -57,8 +73,8 @@ public class ReferenceDataController {
                 .bodyValue(responseDTO));
     }
 
-    private TickersSearchConfig fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
-        return TickersSearchConfig.builder()
+    private TickersSearchConfigDTO fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {
+        return TickersSearchConfigDTO.builder()
                 .symbol(queryParams.getFirst("ticker"))
                 .searchTerm(queryParams.getFirst("search-term"))
                 .type(queryParams.getFirst("type"))

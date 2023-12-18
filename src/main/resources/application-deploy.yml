@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: aws-parameterstore:/config/stocks_deploy/
+
+logging:
+  level:
+    com.amazonaws: DEBUG
+    org.springframework.cloud: DEBUG

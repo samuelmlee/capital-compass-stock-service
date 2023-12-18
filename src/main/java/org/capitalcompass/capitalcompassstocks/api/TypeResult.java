@@ -1,4 +1,4 @@
-package org.capitalcompass.capitalcompassstocks.model;
+package org.capitalcompass.capitalcompassstocks.api;
 
 import lombok.Data;
 

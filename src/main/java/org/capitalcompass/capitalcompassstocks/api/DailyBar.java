@@ -1,10 +1,17 @@
-package org.capitalcompass.capitalcompassstocks.model;
+package org.capitalcompass.capitalcompassstocks.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
 public class DailyBar {
+
+    private Integer closePrice;
+    private Integer openPrice;
+    private Integer highestPrice;
+    private Integer lowestPrice;
+    private Integer tradingVolume;
+    private Integer volumeWeightedPrice;
 
     @JsonProperty("closePrice")
     public Integer getClosePrice() {
@@ -16,8 +23,6 @@ public class DailyBar {
         this.closePrice = closePrice;
     }
 
-    private Integer closePrice;
-
     @JsonProperty("openPrice")
     public Integer getOpenPrice() {
         return openPrice;
@@ -27,8 +32,6 @@ public class DailyBar {
     public void setOpenPrice(Integer openPrice) {
         this.openPrice = openPrice;
     }
-
-    private Integer openPrice;
 
     @JsonProperty("highestPrice")
     public Integer getHighestPrice() {
@@ -40,8 +43,6 @@ public class DailyBar {
         this.highestPrice = highestPrice;
     }
 
-    private Integer highestPrice;
-
     @JsonProperty("lowestPrice")
     public Integer getLowestPrice() {
         return lowestPrice;
@@ -51,8 +52,6 @@ public class DailyBar {
     public void setLowestPrice(Integer lowestPrice) {
         this.lowestPrice = lowestPrice;
     }
-
-    private Integer lowestPrice;
 
     @JsonProperty("tradingVolume")
     public Integer getTradingVolume() {
@@ -64,9 +63,6 @@ public class DailyBar {
         this.tradingVolume = tradingVolume;
     }
 
-    private Integer tradingVolume;
-
-
     @JsonProperty("volumeWeightedPrice")
     public Integer getVolumeWeightedPrice() {
         return volumeWeightedPrice;
@@ -76,6 +72,4 @@ public class DailyBar {
     public void setVolumeWeightedPrice(Integer volumeWeightedPrice) {
         this.volumeWeightedPrice = volumeWeightedPrice;
     }
-
-    private Integer volumeWeightedPrice;
 }

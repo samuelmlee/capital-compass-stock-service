@@ -1,10 +1,10 @@
 package org.capitalcompass.capitalcompassstocks.client;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.model.TickerDetailsResponse;
-import org.capitalcompass.capitalcompassstocks.model.TickerTypesResponse;
-import org.capitalcompass.capitalcompassstocks.model.TickersResponse;
-import org.capitalcompass.capitalcompassstocks.model.TickersSearchConfig;
+import org.capitalcompass.capitalcompassstocks.api.TickerDetailsResponse;
+import org.capitalcompass.capitalcompassstocks.api.TickerTypesResponse;
+import org.capitalcompass.capitalcompassstocks.api.TickersResponse;
+import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,7 +17,7 @@ public class ReferenceDataClient {
     private final WebClient webClient;
     private final String tickersUri = "/v3/reference/tickers";
 
-    public Mono<TickersResponse> getTickers(TickersSearchConfig config) {
+    public Mono<TickersResponse> getTickers(TickersSearchConfigDTO config) {
 //        return Mono.error(new PolygonServerErrorException("Polygon Server error"));
 //        return Mono.error(new PolygonClientErrorException("Polygon request param invalid error"));
         return webClient.get().uri(uri ->

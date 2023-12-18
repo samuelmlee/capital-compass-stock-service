@@ -7,6 +7,8 @@ server:
 spring:
   application:
     name: stocks
+  profiles:
+    active: deploy
 
 
 eureka:
@@ -22,7 +24,9 @@ api:
     base-url: https://api.polygon.io
 
 
-    logging:
-      level:
-        #        org.springframework.security: TRACE
-        root: DEBUG
+logging:
+  level:
+    #        org.springframework.security: TRACE
+    #        root: DEBUG
+    org.springframework.data: DEBUG
+    io.r2dbc: DEBUG
