@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -81,16 +83,18 @@ public class ReferenceDataService {
     }
 
     @Transactional
-    public Mono<Boolean> registerTicker(String tickerSymbol) {
-        return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
-            TickerDetailResult tickerDetail = response.getResult();
+    public Mono<Set<String>> registerTickers(Set<String> tickerSymbols) {
+        return Flux.fromIterable(tickerSymbols)
+                .flatMap(referenceDataClient::getTickerDetails)
+                .flatMap(response -> {
+                    TickerDetailResult tickerDetail = response.getResult();
 
-            if (tickerDetail == null || !Objects.equals(tickerDetail.getSymbol(), tickerSymbol)) {
-                return Mono.just(false);
-            }
+                    if (tickerDetail == null || !tickerSymbols.contains(tickerDetail.getSymbol())) {
+                        return Mono.empty();
+                    }
 
-            return saveTickerResult(tickerDetail).thenReturn(true);
-        });
+                    return saveTickerResult(tickerDetail).thenReturn(tickerDetail.getSymbol());
+                }).collect(Collectors.toSet());
 
     }
 

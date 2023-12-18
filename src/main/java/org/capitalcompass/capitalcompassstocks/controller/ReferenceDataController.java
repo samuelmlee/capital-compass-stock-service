@@ -50,7 +50,7 @@ public class ReferenceDataController {
         Mono<TickerRequestDTO> tickerRequestMono = request.bodyToMono(TickerRequestDTO.class);
 
         return tickerRequestMono.flatMap(tickerRequestDTO ->
-                referenceDataService.registerTicker(tickerRequestDTO.getSymbol()).flatMap(validated -> ok()
+                referenceDataService.registerTickers(tickerRequestDTO.getSymbols()).flatMap(validated -> ok()
                         .contentType(MediaType.APPLICATION_JSON).bodyValue(validated)));
     }
 
