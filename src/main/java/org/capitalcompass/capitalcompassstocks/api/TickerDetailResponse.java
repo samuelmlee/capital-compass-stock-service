@@ -4,7 +4,7 @@ import lombok.Data;
 
 
 @Data
-public class TickerDetailsResponse {
-    private TickerDetailsResult results;
+public class TickerDetailResponse {
+    private TickerDetailResult result;
     private String status;
 }

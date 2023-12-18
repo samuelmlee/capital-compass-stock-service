@@ -1,13 +1,13 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.api.TickerResult;
+import org.capitalcompass.capitalcompassstocks.api.TickerDetailResult;
 import org.capitalcompass.capitalcompassstocks.client.ReferenceDataClient;
 import org.capitalcompass.capitalcompassstocks.dto.TickerDetailsDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickerTypesDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickersDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
-import org.capitalcompass.capitalcompassstocks.entity.Ticker;
+import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
 import org.capitalcompass.capitalcompassstocks.repository.TickerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Objects;
 
 
@@ -42,7 +41,7 @@ public class ReferenceDataService {
     public Mono<TickerDetailsDTO> getTickerDetails(String tickerSymbol) {
         return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
             TickerDetailsDTO dto = TickerDetailsDTO.builder()
-                    .result(response.getResults())
+                    .result(response.getResult())
                     .build();
             return Mono.just(dto);
         });
@@ -82,28 +81,36 @@ public class ReferenceDataService {
     }
 
     @Transactional
-    public Mono<Boolean> registerTicker(TickersSearchConfigDTO config) {
-        return referenceDataClient.getTickers(config).flatMap(response -> {
-            List<TickerResult> results = response.getResults();
+    public Mono<Boolean> registerTicker(String tickerSymbol) {
+        return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
+            TickerDetailResult tickerDetail = response.getResult();
 
-            if (results.isEmpty() || !Objects.equals(results.get(0).getSymbol(), config.getSymbol())) {
+            if (tickerDetail == null || !Objects.equals(tickerDetail.getSymbol(), tickerSymbol)) {
                 return Mono.just(false);
             }
 
-            return saveTickerResult(results.get(0)).thenReturn(true);
+            return saveTickerResult(tickerDetail).thenReturn(true);
         });
 
     }
 
-    private Mono<Ticker> saveTickerResult(TickerResult result) {
-        Ticker tickerEntity = Ticker.builder()
+    private Mono<TickerDetail> saveTickerResult(TickerDetailResult result) {
+        TickerDetail detail = TickerDetail.builder()
                 .symbol(result.getSymbol())
                 .name(result.getName())
                 .market(result.getMarket())
                 .primaryExchange(result.getPrimaryExchange())
                 .currencyName(result.getCurrencyName())
+                .type(result.getType())
+                .description(result.getDescription())
+                .marketCap(result.getMarketCap())
+                .homePageUrl(result.getHomePageUrl())
+                .totalEmployees(result.getTotalEmployees())
+                .listDate(result.getListDate())
+                .shareClassSharesOutstanding(result.getShareClassSharesOutstanding())
+                .weightedSharesOutstanding(result.getWeightedSharesOutstanding())
                 .build();
 
-        return this.tickerRepository.save(tickerEntity);
+        return this.tickerRepository.save(detail);
     }
 }

@@ -49,16 +49,9 @@ public class ReferenceDataController {
     public Mono<ServerResponse> registerTicker(ServerRequest request) {
         Mono<TickerRequestDTO> tickerRequestMono = request.bodyToMono(TickerRequestDTO.class);
 
-        return tickerRequestMono.flatMap(tickerRequestDTO -> {
-            TickersSearchConfigDTO config = TickersSearchConfigDTO.builder()
-                    .symbol(tickerRequestDTO.getSymbol())
-                    .build();
-
-            return referenceDataService.registerTicker(config).flatMap(tickerDTO -> ok()
-                    .contentType(MediaType.APPLICATION_JSON).bodyValue(tickerDTO));
-        });
-
-
+        return tickerRequestMono.flatMap(tickerRequestDTO ->
+                referenceDataService.registerTicker(tickerRequestDTO.getSymbol()).flatMap(validated -> ok()
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(validated)));
     }
 
     public Mono<ServerResponse> getTickersByCursor(ServerRequest request) {

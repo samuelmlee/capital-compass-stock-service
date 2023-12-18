@@ -9,7 +9,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @Builder
-public class Ticker {
+public class TickerDetail {
 
     @Id
     @Generated
@@ -17,9 +17,18 @@ public class Ticker {
 
     @Size(max = 10)
     private String symbol;
+
     private String name;
     private String market;
-    private String currencyName;
     private String primaryExchange;
+    private String currencyName;
+    private String type;
+    private String description;
+    private Long marketCap;
+    private String homePageUrl;
+    private Integer totalEmployees;
+    private String listDate;
+    private Long shareClassSharesOutstanding;
+    private Long weightedSharesOutstanding;
 
 }

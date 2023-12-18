@@ -23,6 +23,7 @@ public class ReferenceRouteConfig {
                                 .GET("/details/{ticker}", referenceDataController::getTickerDetails)
                                 .GET("/cursor/{cursor}", referenceDataController::getTickersByCursor))
                         .GET(referenceDataController::getTickersByParams)
+                        .POST(referenceDataController::registerTicker)
                 )
                 .build();
 

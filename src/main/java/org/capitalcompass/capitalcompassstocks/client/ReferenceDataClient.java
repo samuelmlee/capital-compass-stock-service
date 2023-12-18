@@ -1,7 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.client;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.api.TickerDetailsResponse;
+import org.capitalcompass.capitalcompassstocks.api.TickerDetailResponse;
 import org.capitalcompass.capitalcompassstocks.api.TickerTypesResponse;
 import org.capitalcompass.capitalcompassstocks.api.TickersResponse;
 import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
@@ -31,13 +31,13 @@ public class ReferenceDataClient {
                 .retrieve().bodyToMono(TickersResponse.class);
     }
 
-    public Mono<TickerDetailsResponse> getTickerDetails(String tickerSymbol) {
+    public Mono<TickerDetailResponse> getTickerDetails(String tickerSymbol) {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
                                 .path("/" + tickerSymbol)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(TickerDetailsResponse.class);
+                .retrieve().bodyToMono(TickerDetailResponse.class);
     }
 
     public Mono<TickersResponse> getTickersByCursor(String cursor) {
