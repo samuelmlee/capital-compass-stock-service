@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class TickerDetailResponse {
-    private TickerDetailResult result;
+    // results instance variable from ticker details API
+    private TickerDetailResult results;
     private String status;
 }

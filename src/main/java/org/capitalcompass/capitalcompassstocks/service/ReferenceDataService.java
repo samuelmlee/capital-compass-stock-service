@@ -43,7 +43,7 @@ public class ReferenceDataService {
     public Mono<TickerDetailsDTO> getTickerDetails(String tickerSymbol) {
         return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
             TickerDetailsDTO dto = TickerDetailsDTO.builder()
-                    .result(response.getResult())
+                    .result(response.getResults())
                     .build();
             return Mono.just(dto);
         });
@@ -85,7 +85,7 @@ public class ReferenceDataService {
     @Transactional
     public Mono<Set<String>> registerTickers(Set<String> tickerSymbols) {
         return Flux.fromIterable(tickerSymbols)
-                .flatMap(referenceDataClient::getTickerDetails)
+                .flatMap(this::getTickerDetails)
                 .flatMap(response -> {
                     TickerDetailResult tickerDetail = response.getResult();
 

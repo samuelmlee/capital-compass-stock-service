@@ -14,6 +14,6 @@ CREATE TABLE IF NOT EXISTS ticker_detail
     total_employees INT,
     list_date VARCHAR(50),
     share_class_shares_outstanding BIGINT,
-    weighted_shares_uutstanding BIGINT
+    weighted_shares_outstanding BIGINT
 
     );
