@@ -2,14 +2,19 @@ package org.capitalcompass.capitalcompassstocks.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.api.TickerSnapshot;
+import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotsMapDTO;
 import org.capitalcompass.capitalcompassstocks.service.MarketDataService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
@@ -36,5 +41,16 @@ public class MarketDataController {
                 ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(marketDataService.getAllTickerSnapshots(), TickerSnapshot.class));
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> getBatchTickerSnapshots() {
+        return route(POST(TICKER_SNAPSHOT_URL + "/batch"), request -> {
+            Mono<Set<String>> tickerSymbols = request.bodyToMono(Set.class);
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(marketDataService.getBatchTickerSnapshots(tickerSymbols), TickerSnapshotsMapDTO.class);
+
+        });
     }
 }

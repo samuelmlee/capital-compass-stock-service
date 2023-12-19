@@ -46,7 +46,7 @@ public class ReferenceDataController {
 
     }
 
-    public Mono<ServerResponse> registerTicker(ServerRequest request) {
+    public Mono<ServerResponse> registerTickers(ServerRequest request) {
         Mono<TickerRequestDTO> tickerRequestMono = request.bodyToMono(TickerRequestDTO.class);
 
         return tickerRequestMono.flatMap(tickerRequestDTO ->
