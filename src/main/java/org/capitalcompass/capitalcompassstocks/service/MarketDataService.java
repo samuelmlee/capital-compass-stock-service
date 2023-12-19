@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.api.TickerSnapshot;
 import org.capitalcompass.capitalcompassstocks.client.MarketDataClient;
 import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotDTO;
-import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotsMapDTO;
+import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotMapDTO;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,12 +27,12 @@ public class MarketDataService {
         return marketDataClient.getAllTickerSnapShots();
     }
 
-    public Mono<TickerSnapshotsMapDTO> getBatchTickerSnapshots(Mono<Set<String>> tickerSymbolsMono) {
+    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(Mono<Set<String>> tickerSymbolsMono) {
         return tickerSymbolsMono.flatMap(tickerSymbols -> getAllTickerSnapshots()
                 .filter(tickerSnapshot -> tickerSymbols.contains(tickerSnapshot.getSymbol()))
                 .flatMap(this::buildTickerSnapshotDTO)
                 .collectMap(TickerSnapshotDTO::getSymbol)
-                .flatMap(map -> Mono.just(TickerSnapshotsMapDTO.builder()
+                .flatMap(map -> Mono.just(TickerSnapshotMapDTO.builder()
                         .tickers(map)
                         .build())));
     }

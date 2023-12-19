@@ -7,6 +7,6 @@ import java.util.Map;
 
 @Data
 @Builder
-public class TickerSnapshotsMapDTO {
+public class TickerSnapshotMapDTO {
     Map<String, TickerSnapshotDTO> tickers;
 }

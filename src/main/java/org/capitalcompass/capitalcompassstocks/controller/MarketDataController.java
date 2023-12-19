@@ -2,9 +2,10 @@ package org.capitalcompass.capitalcompassstocks.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.api.TickerSnapshot;
-import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotsMapDTO;
+import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotMapDTO;
 import org.capitalcompass.capitalcompassstocks.service.MarketDataService;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -46,10 +47,11 @@ public class MarketDataController {
     @Bean
     public RouterFunction<ServerResponse> getBatchTickerSnapshots() {
         return route(POST(TICKER_SNAPSHOT_URL + "/batch"), request -> {
-            Mono<Set<String>> tickerSymbols = request.bodyToMono(Set.class);
+            Mono<Set<String>> tickerSymbols = request.bodyToMono(new ParameterizedTypeReference<Set<String>>() {
+            });
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(marketDataService.getBatchTickerSnapshots(tickerSymbols), TickerSnapshotsMapDTO.class);
+                    .body(marketDataService.getBatchTickerSnapshots(tickerSymbols), TickerSnapshotMapDTO.class);
 
         });
     }
