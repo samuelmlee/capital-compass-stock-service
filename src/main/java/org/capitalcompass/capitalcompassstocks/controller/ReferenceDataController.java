@@ -41,7 +41,7 @@ public class ReferenceDataController {
 
     public Mono<ServerResponse> getTickerDetails(ServerRequest request) {
         String tickerSymbol = request.pathVariable("ticker");
-        return referenceDataService.getTickerDetails(tickerSymbol).flatMap(detailsDTO -> ok()
+        return referenceDataService.getTickerDetail(tickerSymbol).flatMap(detailsDTO -> ok()
                 .contentType(MediaType.APPLICATION_JSON).bodyValue(detailsDTO));
 
     }
