@@ -2,8 +2,7 @@ package org.capitalcompass.capitalcompassstocks.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.capitalcompassstocks.dto.TickerRequestDTO;
-import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
+import org.capitalcompass.capitalcompassstocks.dto.*;
 import org.capitalcompass.capitalcompassstocks.service.ReferenceDataService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -33,37 +32,35 @@ public class ReferenceDataController {
             return ServerResponse.badRequest().bodyValue(violations);
         }
 
-        return referenceDataService.getTickers(config).flatMap(tickersDTO -> ok()
+        return ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(tickersDTO)
-        );
+                .body(referenceDataService.getTickers(config), TickersDTO.class);
     }
 
     public Mono<ServerResponse> getTickerDetails(ServerRequest request) {
         String tickerSymbol = request.pathVariable("ticker");
-        return referenceDataService.getTickerDetail(tickerSymbol).flatMap(detailsDTO -> ok()
-                .contentType(MediaType.APPLICATION_JSON).bodyValue(detailsDTO));
+        return ok().contentType(MediaType.APPLICATION_JSON)
+                .body(referenceDataService.getTickerDetail(tickerSymbol), TickerDetailDTO.class);
 
     }
 
     public Mono<ServerResponse> registerTickers(ServerRequest request) {
         Mono<TickerRequestDTO> tickerRequestMono = request.bodyToMono(TickerRequestDTO.class);
 
-        return tickerRequestMono.flatMap(tickerRequestDTO ->
-                referenceDataService.registerTickers(tickerRequestDTO.getSymbols()).flatMap(validated -> ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(validated)));
+        return tickerRequestMono.flatMap(tickerRequestDTO -> ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(referenceDataService.registerTickers(tickerRequestDTO.getSymbols()), Set.class));
     }
 
     public Mono<ServerResponse> getTickersByCursor(ServerRequest request) {
         String cursor = request.pathVariable("cursor");
-        return referenceDataService.getTickersByCursor(cursor).flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(responseDTO)
-        );
+        return ok().contentType(MediaType.APPLICATION_JSON)
+                .body(referenceDataService.getTickersByCursor(cursor), TickersDTO.class);
     }
 
     public Mono<ServerResponse> getTickerTypes(ServerRequest request) {
-        return referenceDataService.getTickerTypes().flatMap(responseDTO -> ok().contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(responseDTO));
+        return ok().contentType(MediaType.APPLICATION_JSON)
+                .body(referenceDataService.getTickerTypes(), TickerTypesDTO.class);
     }
 
     private TickersSearchConfigDTO fromQueryParamsToSearchConfig(MultiValueMap<String, String> queryParams) {

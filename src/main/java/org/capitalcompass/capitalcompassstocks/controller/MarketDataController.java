@@ -32,7 +32,7 @@ public class MarketDataController {
         return route(GET(TICKER_SNAPSHOT_URL + "/{symbol}"), request -> {
             String tickerSymbol = request.pathVariable("symbol");
             return marketDataService.getTickerSnapshot(tickerSymbol).flatMap(snapshotDTO -> ok()
-                    .contentType(MediaType.APPLICATION_JSON).bodyValue(snapshotDTO));
+                    .contentType(MediaType.APPLICATION_JSON).body(snapshotDTO, TickerSnapshot.class));
         });
     }
 

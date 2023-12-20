@@ -90,23 +90,14 @@ public class ReferenceDataService {
 
     public Mono<TickerDetail> getAndSaveTickerDetail(String tickerSymbol) {
         return getTickerDetailBySymbol(tickerSymbol)
-                .flatMap(tickerDetail -> {
-                    if (tickerDetail != null) {
-                        return Mono.just(tickerDetail);
-                    }
-                    return getTickerDetailFromClient(tickerSymbol).flatMap(this::saveTickerDetail);
-                });
+                .switchIfEmpty(getTickerDetailFromClient(tickerSymbol).flatMap(this::saveTickerDetail));
     }
 
 
     public Mono<TickerTypesDTO> getTickerTypes() {
-        return referenceDataClient.getTickerTypes().flatMap(response -> {
-            TickerTypesDTO dto = TickerTypesDTO.builder()
-                    .results(response.getResults())
-                    .build();
-            return Mono.just(dto);
-
-        });
+        return referenceDataClient.getTickerTypes().map(response -> TickerTypesDTO.builder()
+                .results(response.getResults())
+                .build());
     }
 
     public Mono<Set<String>> registerTickers(Set<String> tickerSymbols) {

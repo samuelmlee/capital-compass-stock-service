@@ -21,9 +21,9 @@ public class ReferenceRouteConfig {
                         .nest(accept(MediaType.APPLICATION_JSON), nestedBuilder -> nestedBuilder
                                 .GET("/types", referenceDataController::getTickerTypes)
                                 .GET("/details/{ticker}", referenceDataController::getTickerDetails)
-                                .GET("/cursor/{cursor}", referenceDataController::getTickersByCursor))
+                                .GET("/cursor/{cursor}", referenceDataController::getTickersByCursor)
+                                .POST("/register", referenceDataController::registerTickers))
                         .GET(referenceDataController::getTickersByParams)
-                        .POST(referenceDataController::registerTickers)
                 )
                 .build();
 
