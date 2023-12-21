@@ -27,14 +27,14 @@ public class MarketDataService {
         return marketDataClient.getAllTickerSnapShots();
     }
 
-    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(Mono<Set<String>> tickerSymbolsMono) {
-        return tickerSymbolsMono.flatMap(tickerSymbols -> getAllTickerSnapshots()
+    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(Set<String> tickerSymbols) {
+        return getAllTickerSnapshots()
                 .filter(tickerSnapshot -> tickerSymbols.contains(tickerSnapshot.getSymbol()))
                 .flatMap(this::buildTickerSnapshotDTO)
                 .collectMap(TickerSnapshotDTO::getSymbol)
                 .flatMap(map -> Mono.just(TickerSnapshotMapDTO.builder()
                         .tickers(map)
-                        .build())));
+                        .build()));
     }
 
     private Mono<TickerSnapshotDTO> buildTickerSnapshotDTO(TickerSnapshot tickerSnapshot) {

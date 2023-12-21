@@ -4,55 +4,31 @@ import lombok.RequiredArgsConstructor;
 import org.capitalcompass.capitalcompassstocks.api.TickerSnapshot;
 import org.capitalcompass.capitalcompassstocks.dto.TickerSnapshotMapDTO;
 import org.capitalcompass.capitalcompassstocks.service.MarketDataService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
-import static org.springframework.web.reactive.function.server.ServerResponse.ok;
-
-@Controller
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/v1/stocks/market/snapshot/tickers")
 public class MarketDataController {
-
-    private final String TICKER_SNAPSHOT_URL = "/v1/stocks/market/snapshot/tickers";
-
+    
     private final MarketDataService marketDataService;
 
-    @Bean
-    public RouterFunction<ServerResponse> getTickerSnapshot() {
-        return route(GET(TICKER_SNAPSHOT_URL + "/{symbol}"), request -> {
-            String tickerSymbol = request.pathVariable("symbol");
-            return marketDataService.getTickerSnapshot(tickerSymbol).flatMap(snapshotDTO -> ok()
-                    .contentType(MediaType.APPLICATION_JSON).body(snapshotDTO, TickerSnapshot.class));
-        });
+    @GetMapping("/{symbol}")
+    public Mono<TickerSnapshot> getTickerSnapshot(@PathVariable String symbol) {
+        return marketDataService.getTickerSnapshot(symbol);
     }
 
-    @Bean
-    public RouterFunction<ServerResponse> getAllTickerSnapshots() {
-        return route(GET(TICKER_SNAPSHOT_URL), request ->
-                ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(marketDataService.getAllTickerSnapshots(), TickerSnapshot.class));
+    @GetMapping
+    public Flux<TickerSnapshot> getAllTickerSnapshots() {
+        return marketDataService.getAllTickerSnapshots();
     }
 
-    @Bean
-    public RouterFunction<ServerResponse> getBatchTickerSnapshots() {
-        return route(POST(TICKER_SNAPSHOT_URL + "/batch"), request -> {
-            Mono<Set<String>> tickerSymbols = request.bodyToMono(new ParameterizedTypeReference<Set<String>>() {
-            });
-            return ServerResponse.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(marketDataService.getBatchTickerSnapshots(tickerSymbols), TickerSnapshotMapDTO.class);
-
-        });
+    @PostMapping("/batch")
+    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(@RequestBody Set<String> tickerSymbols) {
+        return marketDataService.getBatchTickerSnapshots(tickerSymbols);
     }
 }

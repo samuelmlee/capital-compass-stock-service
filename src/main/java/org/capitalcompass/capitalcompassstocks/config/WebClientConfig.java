@@ -1,8 +1,6 @@
 package org.capitalcompass.capitalcompassstocks.config;
 
 import lombok.extern.log4j.Log4j2;
-import org.capitalcompass.capitalcompassstocks.exception.PolygonClientErrorException;
-import org.capitalcompass.capitalcompassstocks.exception.PolygonServerErrorException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,19 +21,6 @@ public class WebClientConfig {
     @Value("${api.polygon.base-url}")
     private String polygonUrl;
 
-    public static ExchangeFilterFunction errorHandler() {
-        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            if (clientResponse.statusCode().is5xxServerError()) {
-                return clientResponse.bodyToMono(String.class).flatMap(errorBody ->
-                        Mono.error(new PolygonServerErrorException(errorBody)));
-            }
-            if (clientResponse.statusCode().is4xxClientError()) {
-                return clientResponse.bodyToMono(String.class).flatMap(errorBody ->
-                        Mono.error(new PolygonClientErrorException(errorBody)));
-            }
-            return Mono.just(clientResponse);
-        });
-    }
 
     @Bean
     public WebClient webClient() {
@@ -50,7 +35,6 @@ public class WebClientConfig {
                 .baseUrl(polygonUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, polygonSecret)
-                .filter(errorHandler())
                 .filters(exchangeFilterFunctions -> {
                     exchangeFilterFunctions.add(logRequest());
                     exchangeFilterFunctions.add(logResponse());

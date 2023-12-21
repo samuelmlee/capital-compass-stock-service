@@ -5,9 +5,11 @@ import org.capitalcompass.capitalcompassstocks.api.TickerDetailResponse;
 import org.capitalcompass.capitalcompassstocks.api.TickerTypesResponse;
 import org.capitalcompass.capitalcompassstocks.api.TickersResponse;
 import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
+import org.capitalcompass.capitalcompassstocks.exception.PolygonClientErrorException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -18,8 +20,6 @@ public class ReferenceDataClient {
     private final String tickersUri = "/v3/reference/tickers";
 
     public Mono<TickersResponse> getTickers(TickersSearchConfigDTO config) {
-//        return Mono.error(new PolygonServerErrorException("Polygon Server error"));
-//        return Mono.error(new PolygonClientErrorException("Polygon request param invalid error"));
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
                                 .queryParam("search", config.getSearchTerm())
@@ -28,7 +28,14 @@ public class ReferenceDataClient {
                                 .queryParam("active", true)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(TickersResponse.class);
+                .retrieve()
+                .bodyToMono(TickersResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex ->
+                        Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Tickers : " + ex.getMessage()))
+                )
+                .onErrorResume(Exception.class, ex ->
+                        Mono.error(new PolygonClientErrorException("A network error occurred getting Tickers: " + ex.getMessage()))
+                );
     }
 
     public Mono<TickerDetailResponse> getTickerDetails(String tickerSymbol) {
@@ -37,7 +44,13 @@ public class ReferenceDataClient {
                                 .path("/" + tickerSymbol)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(TickerDetailResponse.class);
+                .retrieve().bodyToMono(TickerDetailResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex ->
+                        Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Ticker Details : " + ex.getMessage()))
+                )
+                .onErrorResume(Exception.class, ex ->
+                        Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker Details: " + ex.getMessage()))
+                );
     }
 
     public Mono<TickersResponse> getTickersByCursor(String cursor) {
@@ -46,7 +59,13 @@ public class ReferenceDataClient {
                                 .queryParam("cursor", cursor)
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(TickersResponse.class);
+                .retrieve().bodyToMono(TickersResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex ->
+                        Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Ticker with Cursor : " + ex.getMessage()))
+                )
+                .onErrorResume(Exception.class, ex ->
+                        Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker with Cursor: " + ex.getMessage()))
+                );
     }
 
     public Mono<TickerTypesResponse> getTickerTypes() {
@@ -54,7 +73,13 @@ public class ReferenceDataClient {
                         uri.path(tickersUri + "/types")
                                 .build())
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(TickerTypesResponse.class);
+                .retrieve().bodyToMono(TickerTypesResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex ->
+                        Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Ticker Types : " + ex.getMessage()))
+                )
+                .onErrorResume(Exception.class, ex ->
+                        Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker Types: " + ex.getMessage()))
+                );
     }
 
 }
