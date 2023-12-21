@@ -1,6 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.capitalcompassstocks.api.TickerDetailResult;
 import org.capitalcompass.capitalcompassstocks.client.ReferenceDataClient;
 import org.capitalcompass.capitalcompassstocks.dto.TickerDetailDTO;
@@ -8,6 +9,7 @@ import org.capitalcompass.capitalcompassstocks.dto.TickerTypesDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickersDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
 import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
+import org.capitalcompass.capitalcompassstocks.exception.TickerDetailRepositoryException;
 import org.capitalcompass.capitalcompassstocks.repository.TickerDetailRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class ReferenceDataService {
 
@@ -66,7 +69,16 @@ public class ReferenceDataService {
     }
 
     public Mono<TickerDetail> getTickerDetailBySymbol(String tickerSymbol) {
-        return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol));
+        if (tickerSymbol == null || tickerSymbol.trim().isEmpty()) {
+            log.error("Ticker symbol is empty");
+            return Mono.error(new IllegalArgumentException("Ticker symbol is required"));
+        }
+
+        return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
+                .onErrorResume(e -> {
+                    log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
+                    return Mono.error(new TickerDetailRepositoryException("Error accessing database for ticker symbol:" + tickerSymbol));
+                });
     }
 
     public Mono<TickerDetail> getTickerDetailFromClient(String tickerSymbol) {
@@ -108,7 +120,11 @@ public class ReferenceDataService {
     }
 
     private Mono<TickerDetail> saveTickerDetail(TickerDetail detail) {
-        return transactionalOperator.transactional(this.tickerDetailRepository.save(detail));
+        return transactionalOperator.transactional(this.tickerDetailRepository.save(detail))
+                .onErrorResume(e -> {
+                    log.error("Error saving ticker detail: {}", detail, e);
+                    return Mono.error(new TickerDetailRepositoryException("Error accessing database to save Ticker Detail :" + detail));
+                });
     }
 
     private TickerDetail buildTickerDetailFromResult(TickerDetailResult result) {
