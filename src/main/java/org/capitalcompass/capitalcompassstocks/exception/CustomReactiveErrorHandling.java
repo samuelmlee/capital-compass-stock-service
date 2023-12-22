@@ -14,4 +14,16 @@ public class CustomReactiveErrorHandling {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.internalServerError().body(ex.getMessage());
     }
+
+    @ExceptionHandler(TickerNotFoundException.class)
+    public ResponseEntity<String> handleTickerNotFoundException(TickerNotFoundException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(TickerDetailRepositoryException.class)
+    public ResponseEntity<String> handleTickerDetailRepositoryException(TickerDetailRepositoryException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.internalServerError().body(ex.getMessage());
+    }
 }
