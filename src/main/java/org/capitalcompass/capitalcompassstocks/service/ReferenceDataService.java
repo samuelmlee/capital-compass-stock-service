@@ -10,6 +10,7 @@ import org.capitalcompass.capitalcompassstocks.dto.TickersDTO;
 import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
 import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
 import org.capitalcompass.capitalcompassstocks.exception.TickerDetailRepositoryException;
+import org.capitalcompass.capitalcompassstocks.exception.TickerNotFoundException;
 import org.capitalcompass.capitalcompassstocks.repository.TickerDetailRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -69,11 +70,6 @@ public class ReferenceDataService {
     }
 
     public Mono<TickerDetail> getTickerDetailBySymbol(String tickerSymbol) {
-        if (tickerSymbol == null || tickerSymbol.trim().isEmpty()) {
-            log.error("Ticker symbol is empty");
-            return Mono.error(new IllegalArgumentException("Ticker symbol is required"));
-        }
-
         return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
                 .onErrorResume(e -> {
                     log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
@@ -83,12 +79,17 @@ public class ReferenceDataService {
 
     public Mono<TickerDetail> getTickerDetailFromClient(String tickerSymbol) {
         return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
+            TickerDetailResult result = response.getResults();
+            if (result == null) {
+                return Mono.error(new TickerNotFoundException("Not ticker detail found from client for :" + tickerSymbol));
+            }
             TickerDetail tickerDetail = buildTickerDetailFromResult(response.getResults());
             return Mono.just(tickerDetail);
         });
     }
 
     public Mono<TickerDetailDTO> getTickerDetail(String tickerSymbol) {
+
         Mono<TickerDetail> tickerDetailMono = getTickerDetailBySymbol(tickerSymbol)
                 .switchIfEmpty(getTickerDetailFromClient(tickerSymbol));
 

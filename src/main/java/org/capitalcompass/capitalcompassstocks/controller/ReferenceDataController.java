@@ -22,13 +22,13 @@ public class ReferenceDataController {
         return referenceDataService.getTickers(config);
     }
 
-    @GetMapping("/details/{ticker}")
-    public Mono<TickerDetailDTO> getTickerDetails(@PathVariable(name = "ticker") String symbol) {
-        return referenceDataService.getTickerDetail(symbol);
+    @GetMapping("/details/{symbol}")
+    public Mono<TickerDetailDTO> getTickerDetails(@Valid TickerSymbolDTO symbolDto) {
+        return referenceDataService.getTickerDetail(symbolDto.getSymbol());
     }
 
     @PostMapping("/register")
-    public Mono<Set<String>> registerTickers(@Valid @RequestBody TickerRequestDTO tickerRequest) {
+    public Mono<Set<String>> registerTickers(@RequestBody @Valid TickerRequestDTO tickerRequest) {
         return referenceDataService.registerTickers(tickerRequest.getSymbols());
     }
 
