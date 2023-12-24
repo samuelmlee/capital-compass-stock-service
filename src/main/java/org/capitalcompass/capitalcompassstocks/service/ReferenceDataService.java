@@ -59,35 +59,6 @@ public class ReferenceDataService {
         });
     }
 
-    private String getCursorFromTickersResponse(String uri) {
-        try {
-            MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
-            String cursor = parameters.getFirst("cursor");
-            return cursor != null ? cursor : "";
-        } catch (IllegalArgumentException e) {
-            return "";
-        }
-    }
-
-    public Mono<TickerDetail> getTickerDetailBySymbol(String tickerSymbol) {
-        return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
-                .onErrorResume(e -> {
-                    log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
-                    return Mono.error(new TickerDetailRepositoryException("Error accessing database for ticker symbol:" + tickerSymbol));
-                });
-    }
-
-    public Mono<TickerDetail> getTickerDetailFromClient(String tickerSymbol) {
-        return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
-            TickerDetailResult result = response.getResults();
-            if (result == null) {
-                return Mono.error(new TickerNotFoundException("Not ticker detail found from client for :" + tickerSymbol));
-            }
-            TickerDetail tickerDetail = buildTickerDetailFromResult(response.getResults());
-            return Mono.just(tickerDetail);
-        });
-    }
-
     public Mono<TickerDetailDTO> getTickerDetail(String tickerSymbol) {
 
         Mono<TickerDetail> tickerDetailMono = getTickerDetailBySymbol(tickerSymbol)
@@ -101,12 +72,6 @@ public class ReferenceDataService {
         });
     }
 
-    public Mono<TickerDetail> getAndSaveTickerDetail(String tickerSymbol) {
-        return getTickerDetailBySymbol(tickerSymbol)
-                .switchIfEmpty(getTickerDetailFromClient(tickerSymbol).flatMap(this::saveTickerDetail));
-    }
-
-
     public Mono<TickerTypesDTO> getTickerTypes() {
         return referenceDataClient.getTickerTypes().map(response -> TickerTypesDTO.builder()
                 .results(response.getResults())
@@ -118,6 +83,40 @@ public class ReferenceDataService {
                 .flatMap(this::getAndSaveTickerDetail)
                 .map(TickerDetail::getSymbol)
                 .collect(Collectors.toSet());
+    }
+
+    private Mono<TickerDetail> getAndSaveTickerDetail(String tickerSymbol) {
+        return getTickerDetailBySymbol(tickerSymbol)
+                .switchIfEmpty(getTickerDetailFromClient(tickerSymbol).flatMap(this::saveTickerDetail));
+    }
+
+    private Mono<TickerDetail> getTickerDetailBySymbol(String tickerSymbol) {
+        return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
+                .onErrorResume(e -> {
+                    log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
+                    return Mono.error(new TickerDetailRepositoryException("Error accessing database for ticker symbol:" + tickerSymbol));
+                });
+    }
+
+    private Mono<TickerDetail> getTickerDetailFromClient(String tickerSymbol) {
+        return referenceDataClient.getTickerDetails(tickerSymbol).flatMap(response -> {
+            TickerDetailResult result = response.getResults();
+            if (result == null) {
+                return Mono.error(new TickerNotFoundException("Not ticker detail found from client for :" + tickerSymbol));
+            }
+            TickerDetail tickerDetail = buildTickerDetailFromResult(response.getResults());
+            return Mono.just(tickerDetail);
+        });
+    }
+
+    private String getCursorFromTickersResponse(String uri) {
+        try {
+            MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
+            String cursor = parameters.getFirst("cursor");
+            return cursor != null ? cursor : "";
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
     }
 
     private Mono<TickerDetail> saveTickerDetail(TickerDetail detail) {

@@ -22,6 +22,11 @@ public class ReferenceDataController {
         return referenceDataService.getTickers(config);
     }
 
+    @GetMapping("/cursor/{cursor}")
+    public Mono<TickersDTO> getTickersByCursor(@PathVariable(name = "cursor") String cursor) {
+        return referenceDataService.getTickersByCursor(cursor);
+    }
+
     @GetMapping("/details/{symbol}")
     public Mono<TickerDetailDTO> getTickerDetails(@Valid TickerSymbolDTO symbolDto) {
         return referenceDataService.getTickerDetail(symbolDto.getSymbol());
@@ -31,12 +36,7 @@ public class ReferenceDataController {
     public Mono<Set<String>> registerTickers(@RequestBody @Valid TickerRequestDTO tickerRequest) {
         return referenceDataService.registerTickers(tickerRequest.getSymbols());
     }
-
-    @GetMapping("/cursor/{cursor}")
-    public Mono<TickersDTO> getTickersByCursor(@PathVariable(name = "cursor") String cursor) {
-        return referenceDataService.getTickersByCursor(cursor);
-    }
-
+    
     @GetMapping("/types")
     public Mono<TickerTypesDTO> getTickerTypes() {
         return referenceDataService.getTickerTypes();

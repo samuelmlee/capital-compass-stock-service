@@ -29,8 +29,8 @@ public class MarketDataController {
         return marketDataService.getAllTickerSnapshots();
     }
 
-    @PostMapping("/batch")
-    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(@RequestBody Set<String> tickerSymbols) {
-        return marketDataService.getBatchTickerSnapshots(tickerSymbols);
+    @PostMapping("/map")
+    public Mono<TickerSnapshotMapDTO> getTickerSnapshotMap(@RequestBody Set<String> tickerSymbols) {
+        return marketDataService.getTickerSnapshotMap(tickerSymbols);
     }
 }

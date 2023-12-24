@@ -27,7 +27,7 @@ public class MarketDataService {
         return marketDataClient.getAllTickerSnapShots();
     }
 
-    public Mono<TickerSnapshotMapDTO> getBatchTickerSnapshots(Set<String> tickerSymbols) {
+    public Mono<TickerSnapshotMapDTO> getTickerSnapshotMap(Set<String> tickerSymbols) {
         return getAllTickerSnapshots()
                 .filter(tickerSnapshot -> tickerSymbols.contains(tickerSnapshot.getSymbol()))
                 .flatMap(this::buildTickerSnapshotDTO)
