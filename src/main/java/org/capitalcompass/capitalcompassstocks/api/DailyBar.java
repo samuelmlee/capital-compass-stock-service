@@ -10,8 +10,8 @@ public class DailyBar {
     private Integer openPrice;
     private Integer highestPrice;
     private Integer lowestPrice;
-    private Integer tradingVolume;
-    private Integer volumeWeightedPrice;
+    private Long tradingVolume;
+    private Long volumeWeightedPrice;
 
     @JsonProperty("closePrice")
     public Integer getClosePrice() {
@@ -54,22 +54,22 @@ public class DailyBar {
     }
 
     @JsonProperty("tradingVolume")
-    public Integer getTradingVolume() {
+    public Long getTradingVolume() {
         return tradingVolume;
     }
 
     @JsonProperty("v")
-    public void setTradingVolume(Integer tradingVolume) {
+    public void setTradingVolume(Long tradingVolume) {
         this.tradingVolume = tradingVolume;
     }
 
     @JsonProperty("volumeWeightedPrice")
-    public Integer getVolumeWeightedPrice() {
+    public Long getVolumeWeightedPrice() {
         return volumeWeightedPrice;
     }
 
     @JsonProperty("vw")
-    public void setVolumeWeightedPrice(Integer volumeWeightedPrice) {
+    public void setVolumeWeightedPrice(Long volumeWeightedPrice) {
         this.volumeWeightedPrice = volumeWeightedPrice;
     }
 }
