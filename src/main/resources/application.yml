@@ -7,21 +7,18 @@ server:
 spring:
   application:
     name: stocks
-  profiles:
-    active: deploy
-
+  config:
+    import:
+      - aws-secretsmanager:/secret/stocks/
+      - aws-parameterstore:/config/stocks/
+      - aws-parameterstore:/config/application/
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8010/eureka
+      defaultZone: ${eureka.default.zone}
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-
-api:
-  polygon:
-    secret: Bearer ${POLYGON_API_KEY}
-    base-url: https://api.polygon.io
 
 
 logging:

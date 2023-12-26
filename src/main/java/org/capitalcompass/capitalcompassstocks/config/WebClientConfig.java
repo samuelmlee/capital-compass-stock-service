@@ -15,10 +15,10 @@ import reactor.core.publisher.Mono;
 @Log4j2
 public class WebClientConfig {
 
-    @Value("${api.polygon.secret}")
+    @Value("${polygon.api.key}")
     private String polygonSecret;
 
-    @Value("${api.polygon.base-url}")
+    @Value("${polygon.base.url}")
     private String polygonUrl;
 
 
@@ -34,7 +34,7 @@ public class WebClientConfig {
                 .exchangeStrategies(exchangeStrategies)
                 .baseUrl(polygonUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, polygonSecret)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + polygonSecret)
                 .filters(exchangeFilterFunctions -> {
                     exchangeFilterFunctions.add(logRequest());
                     exchangeFilterFunctions.add(logResponse());
