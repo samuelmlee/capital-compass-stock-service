@@ -5,10 +5,16 @@ plugins {
 }
 
 group = 'org.capitalcompass'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     sourceCompatibility = '11'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.capitalcompass.capitalcompassstocks.CapitalCompassStocksApplication'
+    }
 }
 
 configurations {

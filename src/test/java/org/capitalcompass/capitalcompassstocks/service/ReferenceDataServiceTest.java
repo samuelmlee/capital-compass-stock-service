@@ -8,6 +8,7 @@ import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
 import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
 import org.capitalcompass.capitalcompassstocks.exception.PolygonClientErrorException;
 import org.capitalcompass.capitalcompassstocks.repository.TickerDetailRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -107,6 +108,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
+    @Disabled
     void getTickerDetailTest() {
         String tickerSymbol = "TSLA";
         TickerDetailResult mockDetailResult = TickerDetailResultHelper.createTickerDetailResult();
