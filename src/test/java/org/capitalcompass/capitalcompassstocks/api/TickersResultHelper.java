@@ -1,5 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.api;
 
+import org.capitalcompass.stockservice.api.TickerResult;
+
 public class TickersResultHelper {
     public static TickerResult createTickerResult(String symbol, String name, String market, String currencyName, String primaryExchange) {
         TickerResult tickerResult = new TickerResult();

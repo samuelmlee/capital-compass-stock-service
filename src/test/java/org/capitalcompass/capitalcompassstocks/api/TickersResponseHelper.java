@@ -1,5 +1,8 @@
 package org.capitalcompass.capitalcompassstocks.api;
 
+import org.capitalcompass.stockservice.api.TickerResult;
+import org.capitalcompass.stockservice.api.TickersResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 

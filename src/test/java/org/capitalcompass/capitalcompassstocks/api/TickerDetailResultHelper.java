@@ -1,6 +1,7 @@
 package org.capitalcompass.capitalcompassstocks.api;
 
-import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
+import org.capitalcompass.stockservice.api.TickerDetailResult;
+import org.capitalcompass.stockservice.entity.TickerDetail;
 
 public class TickerDetailResultHelper {
     public static TickerDetailResult createTickerDetailResult() {

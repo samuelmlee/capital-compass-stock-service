@@ -1,13 +1,18 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
 import org.capitalcompass.capitalcompassstocks.api.*;
-import org.capitalcompass.capitalcompassstocks.client.ReferenceDataClient;
-import org.capitalcompass.capitalcompassstocks.dto.TickerDetailDTO;
-import org.capitalcompass.capitalcompassstocks.dto.TickersDTO;
-import org.capitalcompass.capitalcompassstocks.dto.TickersSearchConfigDTO;
-import org.capitalcompass.capitalcompassstocks.entity.TickerDetail;
-import org.capitalcompass.capitalcompassstocks.exception.PolygonClientErrorException;
-import org.capitalcompass.capitalcompassstocks.repository.TickerDetailRepository;
+import org.capitalcompass.stockservice.api.TickerDetailResponse;
+import org.capitalcompass.stockservice.api.TickerDetailResult;
+import org.capitalcompass.stockservice.api.TickerResult;
+import org.capitalcompass.stockservice.api.TickersResponse;
+import org.capitalcompass.stockservice.client.ReferenceDataClient;
+import org.capitalcompass.stockservice.dto.TickerDetailDTO;
+import org.capitalcompass.stockservice.dto.TickersDTO;
+import org.capitalcompass.stockservice.dto.TickersSearchConfigDTO;
+import org.capitalcompass.stockservice.entity.TickerDetail;
+import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
+import org.capitalcompass.stockservice.repository.TickerDetailRepository;
+import org.capitalcompass.stockservice.service.ReferenceDataService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
