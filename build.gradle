@@ -63,3 +63,11 @@ tasks.named('bootBuildImage') {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+task buildImageScript(type: Exec){
+    group='build'
+    description='Extract layers from jar and build image'
+
+    commandLine 'cmd', '/c', "build-image-script.bat ${project.version}"
+}
+
