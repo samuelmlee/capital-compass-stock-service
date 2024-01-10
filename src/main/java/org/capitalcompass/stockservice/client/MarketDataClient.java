@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -33,8 +34,11 @@ public class MarketDataClient {
                 );
     }
 
-    public Flux<TickerSnapshot> getAllTickerSnapShots() {
-        return webClient.get().uri(snapshotsUri + "/tickers")
+    public Flux<TickerSnapshot> getTickerSnapShots(Set<String> tickerSymbols) {
+        return webClient.get().uri(uriBuilder -> uriBuilder
+                        .path(snapshotsUri + "/tickers")
+                        .queryParam("tickers", String.join(",", tickerSymbols))
+                        .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToMono(AllTickerSnapshotsResponse.class)
                 .flatMapMany(response -> Flux.fromIterable(response.getTickers()))

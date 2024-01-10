@@ -24,11 +24,6 @@ public class MarketDataController {
         return marketDataService.getTickerSnapshot(symbolDTO.getSymbol());
     }
 
-    @GetMapping
-    public Flux<TickerSnapshot> getAllTickerSnapshots() {
-        return marketDataService.getAllTickerSnapshots();
-    }
-
     @GetMapping("/map")
     public Mono<TickerSnapshotMapDTO> getTickerSnapshotMap(@RequestParam Set<String> symbols) {
         return marketDataService.getTickerSnapshotMap(symbols);

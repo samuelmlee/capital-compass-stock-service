@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -23,19 +24,27 @@ public class MarketDataService {
         return marketDataClient.getTickerSnapShot(tickerSymbol).flatMap(response -> Mono.just(response.getTicker()));
     }
 
-    public Flux<TickerSnapshot> getAllTickerSnapshots() {
-        return marketDataClient.getAllTickerSnapShots();
+    public Flux<TickerSnapshot> getTickerSnapshots(Set<String> tickerSymbols) {
+        return marketDataClient.getTickerSnapShots(tickerSymbols);
     }
 
     public Mono<TickerSnapshotMapDTO> getTickerSnapshotMap(Set<String> tickerSymbols) {
-        return getAllTickerSnapshots()
-                .filter(tickerSnapshot -> tickerSymbols.contains(tickerSnapshot.getSymbol()))
-                .flatMap(this::buildTickerSnapshotDTO)
-                .collectMap(TickerSnapshotDTO::getSymbol)
-                .flatMap(map -> Mono.just(TickerSnapshotMapDTO.builder()
-                        .tickers(map)
-                        .build()));
+        Mono<Map<String, TickerSnapshotDTO>> availableSnapshotMap = getAvailableSnapshotMap(tickerSymbols);
+
+        return availableSnapshotMap.flatMap(availableMap ->
+                Flux.fromIterable(tickerSymbols)
+                        .flatMap(symbol -> Mono.justOrEmpty(availableMap.get(symbol))
+                                .switchIfEmpty(buildDefaultSnapshotDTO(symbol)))
+                        .collectMap(TickerSnapshotDTO::getSymbol)
+                        .map(completeMap -> TickerSnapshotMapDTO.builder().tickers(completeMap).build())
+        );
     }
+
+    private Mono<Map<String, TickerSnapshotDTO>> getAvailableSnapshotMap(Set<String> tickerSymbols) {
+        return getTickerSnapshots(tickerSymbols)
+                .flatMap(this::buildTickerSnapshotDTO).collectMap(TickerSnapshotDTO::getSymbol);
+    }
+
 
     private Mono<TickerSnapshotDTO> buildTickerSnapshotDTO(TickerSnapshot tickerSnapshot) {
         return referenceDataService.getTickerDetail(tickerSnapshot.getSymbol()).flatMap(detail -> {
@@ -47,6 +56,18 @@ public class MarketDataService {
                     .prevDay(tickerSnapshot.getPrevDay())
                     .build();
 
+            return Mono.just(dto);
+        });
+    }
+    private Mono<TickerSnapshotDTO> buildDefaultSnapshotDTO(String symbol) {
+        return referenceDataService.getTickerDetail(symbol).flatMap(detail -> {
+            TickerSnapshotDTO dto = TickerSnapshotDTO.builder()
+                    .updated(null)
+                    .symbol(symbol)
+                    .name(detail.getResult().getName())
+                    .day(null)
+                    .prevDay(null)
+                    .build();
             return Mono.just(dto);
         });
     }
