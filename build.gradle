@@ -40,13 +40,13 @@ dependencies {
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-    implementation group: 'dev.miku', name: 'r2dbc-mysql', version: '0.8.2.RELEASE'
+    implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'io.projectreactor:reactor-test:3.6.1'
+    testImplementation 'io.projectreactor:reactor-test'
 
 }
 
@@ -64,9 +64,9 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-task buildImageScript(type: Exec){
-    group='build'
-    description='Extract layers from jar and build image'
+task buildImageScript(type: Exec) {
+    group = 'build'
+    description = 'Extract layers from jar and build image'
 
     commandLine 'cmd', '/c', "build-image-script.bat ${project.version}"
 }
