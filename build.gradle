@@ -42,6 +42,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
+    implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.7.0'
+    
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
