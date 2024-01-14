@@ -11,6 +11,8 @@ focuses on fetching tickers, ticker prices, and storing ticker details, using Sp
 
 - JDK 11
 - Gradle 8.4
+- Access to AWS Parameter Store and AWS Secrets Manager
+- Configured MySQL database
 
 **Steps:**
 
@@ -25,7 +27,7 @@ focuses on fetching tickers, ticker prices, and storing ticker details, using Sp
 - **Java**: Version 11
 - **Gradle**: For dependency management and project building.
 - **MySQL**: For storing ticker details
-- **AWS Parameter Store**: For fetching remote configurations
+- **AWS Services (Parameter Store, Secrets Manager)**: For fetching remote configurations
 
 ## Dependencies / Libraries
 
@@ -37,9 +39,11 @@ Dependencies are managed through Gradle.
 
 ## Usage
 
-Upon launching, the service is accessible through the API Gateway at `https://localhost:8082`.
+Upon launching, the service is accessible through the API Gateway, ex: `https://localhost:8082`.
 
 **API Endpoints:**
+
+Endpoints are listed at http://localhost:8083/swagger-ui.html. These include:
 
 - `GET /v1/stocks/reference/tickers/details/{symbol}`: Retrieves ticker details for a specified symbol.
 
