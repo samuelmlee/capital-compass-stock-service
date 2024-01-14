@@ -12,8 +12,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
 import java.util.Set;
 
+/**
+ * Client class for fetching market data from polygon.io,
+ * retrieving ticker snapshots and related information.
+ */
 @Component
 @RequiredArgsConstructor
 public class MarketDataClient {
@@ -22,6 +27,13 @@ public class MarketDataClient {
 
     private final String snapshotsUri = "/v2/snapshot/locale/us/markets/stocks";
 
+    /**
+     * Retrieves a single ticker snapshot for the given symbol.
+     *
+     * @param tickerSymbol The symbol of the ticker to retrieve.
+     * @return A Mono of TickerSnapShotResponse containing the snapshot data.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Mono<TickerSnapShotResponse> getTickerSnapShot(String tickerSymbol) {
         return webClient.get().uri(snapshotsUri + "/tickers/{symbol}", tickerSymbol)
                 .accept(MediaType.APPLICATION_JSON)
@@ -34,6 +46,13 @@ public class MarketDataClient {
                 );
     }
 
+    /**
+     * Retrieves snapshots for a set of ticker symbols.
+     *
+     * @param tickerSymbols The set of ticker symbols to retrieve snapshots for.
+     * @return A Flux of TickerSnapshot containing the snapshot data for each symbol.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Flux<TickerSnapshot> getTickerSnapShots(Set<String> tickerSymbols) {
         return webClient.get().uri(uriBuilder -> uriBuilder
                         .path(snapshotsUri + "/tickers")

@@ -12,6 +12,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+/**
+ * Client class for fetching reference data related to tickers.
+ * This includes retrieving ticker details, types, and managing tickers search.
+ */
 @Component
 @RequiredArgsConstructor
 public class ReferenceDataClient {
@@ -19,6 +23,13 @@ public class ReferenceDataClient {
     private final WebClient webClient;
     private final String tickersUri = "/v3/reference/tickers";
 
+    /**
+     * Retrieves a list of tickers based on the provided search configuration.
+     *
+     * @param config The configuration for searching tickers including search term, type, and symbol.
+     * @return A Mono of TickersResponse containing the search results.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Mono<TickersResponse> getTickers(TickersSearchConfigDTO config) {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
@@ -38,6 +49,13 @@ public class ReferenceDataClient {
                 );
     }
 
+    /**
+     * Retrieves detailed information about a specific ticker symbol.
+     *
+     * @param tickerSymbol The symbol of the ticker to retrieve details for.
+     * @return A Mono of TickerDetailResponse containing detailed information of the ticker.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Mono<TickerDetailResponse> getTickerDetails(String tickerSymbol) {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
@@ -53,6 +71,13 @@ public class ReferenceDataClient {
                 );
     }
 
+    /**
+     * Retrieves a list of tickers based on a cursor used for pagination.
+     *
+     * @param cursor The cursor pointing to the next page of results.
+     * @return A Mono of TickersResponse containing the tickers starting from the cursor.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Mono<TickersResponse> getTickersByCursor(String cursor) {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
@@ -68,6 +93,12 @@ public class ReferenceDataClient {
                 );
     }
 
+    /**
+     * Retrieves a list of all available ticker types.
+     *
+     * @return A Mono of TickerTypesResponse containing the list of ticker types.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
+     */
     public Mono<TickerTypesResponse> getTickerTypes() {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri + "/types")
