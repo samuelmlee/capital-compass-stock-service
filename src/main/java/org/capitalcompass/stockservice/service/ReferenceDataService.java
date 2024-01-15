@@ -142,11 +142,12 @@ public class ReferenceDataService {
      * @return A Mono of TickerDetail if found, or Mono.empty() if not found.
      */
     private Mono<TickerDetail> getTickerDetailFromRepo(String tickerSymbol) {
-        return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
+        return tickerDetailRepository.findBySymbol(tickerSymbol)
                 .onErrorResume(e -> {
                     log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
                     return Mono.error(new TickerDetailRepositoryException("Error accessing database for ticker symbol:" + tickerSymbol));
-                });
+                })
+                .as(transactionalOperator::transactional);
     }
 
     /**
@@ -191,11 +192,12 @@ public class ReferenceDataService {
      * Copy code
      */
     private Mono<TickerDetail> saveTickerDetail(TickerDetail detail) {
-        return transactionalOperator.transactional(this.tickerDetailRepository.save(detail))
+        return this.tickerDetailRepository.save(detail)
                 .onErrorResume(e -> {
                     log.error("Error saving ticker detail: {}", detail, e);
                     return Mono.error(new TickerDetailRepositoryException("Error accessing database to save Ticker Detail :" + detail));
-                });
+                })
+                .as(transactionalOperator::transactional);
     }
 
     /**

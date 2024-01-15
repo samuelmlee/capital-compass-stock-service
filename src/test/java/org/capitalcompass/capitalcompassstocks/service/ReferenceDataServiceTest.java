@@ -1,6 +1,8 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
 
+import org.capitalcompass.stockservice.api.TickerDetailResponse;
+import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.api.TickerResult;
 import org.capitalcompass.stockservice.api.TickersResponse;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
@@ -30,15 +32,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ReferenceDataServiceTest {
 
-    //    private final ReactiveTransactionManager reactiveTransactionManager = mock(ReactiveTransactionManager.class);
-//    private final TransactionalOperator transactionalOperator = TransactionalOperator.create(reactiveTransactionManager);
+
+    @Mock
+    TransactionalOperator transactionalOperator;
     @Mock
     private ReferenceDataClient referenceDataClient;
     @Mock
     private TickerDetailRepository tickerDetailRepository;
-
-    @Mock
-    private TransactionalOperator transactionalOperator;
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
@@ -223,7 +223,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    void getTickerDetailTest() {
+    void getTickerDetailFromRepoOKTest() {
         String tickerSymbol = "TSLA";
 
         TickerDetail mockDetail = TickerDetail.builder()
@@ -240,14 +240,69 @@ public class ReferenceDataServiceTest {
                     return Mono.from(mono);
                 });
 
+        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+
         when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.just(mockDetail));
 
         Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
-
         StepVerifier.create(result)
                 .consumeNextWith(tickerDetailDTO -> {
                     assertEquals(tickerDetailDTO.getResult(), mockDetail);
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    public void getTickerDetailFromRepoErrorTest() {
+    }
+
+    @Test
+    void getTickerDetailFromClientOKTest() {
+        String tickerSymbol = "TSLA";
+
+        TickerDetail mockDetail = TickerDetail.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("Tesla, Inc.")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        TickerDetailResult mockResult = TickerDetailResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("Tesla, Inc.")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        TickerDetailResponse mockResponse = TickerDetailResponse.builder()
+                .results(mockResult)
+                .build();
+
+        when(transactionalOperator.transactional(any(Mono.class)))
+                .thenAnswer((Answer<Mono<?>>) invocation -> {
+                    Mono<?> mono = invocation.getArgument(0);
+                    return Mono.from(mono);
+                });
+
+        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(mockResponse));
+
+        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.empty());
+
+        Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
+        StepVerifier.create(result)
+                .consumeNextWith(tickerDetailDTO -> {
+                    assertEquals(tickerDetailDTO.getResult(), mockDetail);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getTickerDetailFromClientNoResultTest() {
+    }
+
+    @Test
+    public void getTickerDetailFromClientErrorTest() {
     }
 }
