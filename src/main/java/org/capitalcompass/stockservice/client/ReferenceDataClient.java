@@ -30,7 +30,7 @@ public class ReferenceDataClient {
      * @return A Mono of TickersResponse containing the search results.
      * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error.
      */
-    public Mono<TickersResponse> getTickers(TickersSearchConfigDTO config) {
+    public Mono<TickersResponse> getTickersByConfig(TickersSearchConfigDTO config) {
         return webClient.get().uri(uri ->
                         uri.path(tickersUri)
                                 .queryParam("search", config.getSearchTerm())

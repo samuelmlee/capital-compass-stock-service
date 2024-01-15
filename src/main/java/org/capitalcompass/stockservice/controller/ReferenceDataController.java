@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 /**
@@ -29,7 +30,7 @@ public class ReferenceDataController {
      */
     @GetMapping
     public Mono<TickersDTO> getTickersByParams(@Valid TickersSearchConfigDTO config) {
-        return referenceDataService.getTickers(config);
+        return referenceDataService.getTickersByConfig(config);
     }
 
     /**
@@ -39,7 +40,7 @@ public class ReferenceDataController {
      * @return A Mono of TickersDTO containing the tickers and cursor for the next page fo results.
      */
     @GetMapping("/cursor/{cursor}")
-    public Mono<TickersDTO> getTickersByCursor(@PathVariable(name = "cursor") String cursor) {
+    public Mono<TickersDTO> getTickersByCursor(@PathVariable(name = "cursor") @NotBlank String cursor) {
         return referenceDataService.getTickersByCursor(cursor);
     }
 

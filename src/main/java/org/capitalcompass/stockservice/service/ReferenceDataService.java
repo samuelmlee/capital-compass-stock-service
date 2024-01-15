@@ -45,8 +45,8 @@ public class ReferenceDataService {
      * @param config The TickersSearchConfigDTO configuration for ticker search.
      * @return A Mono of TickersDTO containing the list of tickers and a cursor for pagination.
      */
-    public Mono<TickersDTO> getTickers(TickersSearchConfigDTO config) {
-        return referenceDataClient.getTickers(config).flatMap(response -> {
+    public Mono<TickersDTO> getTickersByConfig(TickersSearchConfigDTO config) {
+        return referenceDataClient.getTickersByConfig(config).flatMap(response -> {
             String nextCursor = getCursorFromTickersResponse(response.getNextUrl());
 
             TickersDTO dto = TickersDTO.builder()
@@ -86,7 +86,7 @@ public class ReferenceDataService {
      */
     public Mono<TickerDetailDTO> getTickerDetail(String tickerSymbol) {
 
-        Mono<TickerDetail> tickerDetailMono = getTickerDetailBySymbol(tickerSymbol)
+        Mono<TickerDetail> tickerDetailMono = getTickerDetailFromRepo(tickerSymbol)
                 .switchIfEmpty(getTickerDetailFromClient(tickerSymbol));
 
         return tickerDetailMono.flatMap(tickerDetail -> {
@@ -131,7 +131,7 @@ public class ReferenceDataService {
      * @return A Mono of TickerDetail representing the saved ticker detail.
      */
     private Mono<TickerDetail> getAndSaveTickerDetail(String tickerSymbol) {
-        return getTickerDetailBySymbol(tickerSymbol)
+        return getTickerDetailFromRepo(tickerSymbol)
                 .switchIfEmpty(getTickerDetailFromClient(tickerSymbol).flatMap(this::saveTickerDetail));
     }
 
@@ -141,7 +141,7 @@ public class ReferenceDataService {
      * @param tickerSymbol The symbol of the ticker to retrieve.
      * @return A Mono of TickerDetail if found, or Mono.empty() if not found.
      */
-    private Mono<TickerDetail> getTickerDetailBySymbol(String tickerSymbol) {
+    private Mono<TickerDetail> getTickerDetailFromRepo(String tickerSymbol) {
         return transactionalOperator.transactional(tickerDetailRepository.findBySymbol(tickerSymbol))
                 .onErrorResume(e -> {
                     log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);

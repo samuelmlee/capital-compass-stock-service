@@ -1,8 +1,6 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
-import org.capitalcompass.capitalcompassstocks.api.*;
-import org.capitalcompass.stockservice.api.TickerDetailResponse;
-import org.capitalcompass.stockservice.api.TickerDetailResult;
+
 import org.capitalcompass.stockservice.api.TickerResult;
 import org.capitalcompass.stockservice.api.TickersResponse;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
@@ -13,43 +11,91 @@ import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.service.ReferenceDataService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ReferenceDataServiceTest {
 
+    //    private final ReactiveTransactionManager reactiveTransactionManager = mock(ReactiveTransactionManager.class);
+//    private final TransactionalOperator transactionalOperator = TransactionalOperator.create(reactiveTransactionManager);
     @Mock
     private ReferenceDataClient referenceDataClient;
-
     @Mock
     private TickerDetailRepository tickerDetailRepository;
 
+    @Mock
+    private TransactionalOperator transactionalOperator;
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
     @Test
-    public void getTickersOKNoCursorTest() {
+    public void getTickersByConfigWithCursorOkTest() {
+        String nextCursor = "YWN0aXZlPXRyd2";
+
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
                 .searchTerm("TESLA")
                 .build();
-        TickerResult teslaResult = TickersResultHelper.createTickerResult("TSLA", "Tesla, Inc. Common Stock", "stocks", "usd", "XNAS");
-        TickersResponse mockResponse = TickersResponseHelper.createTickersResponse(List.of(teslaResult), 1, null);
 
-        when(referenceDataClient.getTickers(mockConfig)).thenReturn(Mono.just(mockResponse));
+        TickerResult teslaResult = TickerResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc. Common Stock")
+                .market("stocks")
+                .currencyName("usd")
+                .primaryExchange("XNAS")
+                .build();
+        TickersResponse mockResponse = TickersResponse.builder()
+                .results(List.of(teslaResult))
+                .count(1)
+                .nextUrl("https://api.polygon.io/v3/reference/tickers?cursor=" + nextCursor)
+                .build();
 
-        Mono<TickersDTO> result = referenceDataService.getTickers(mockConfig);
+        when(referenceDataClient.getTickersByConfig(any(TickersSearchConfigDTO.class))).thenReturn(Mono.just(mockResponse));
+
+        Mono<TickersDTO> result = referenceDataService.getTickersByConfig(mockConfig);
+
+        StepVerifier.create(result)
+                .consumeNextWith(tickersDTO -> {
+                    assertEquals(tickersDTO.getNextCursor(), nextCursor);
+                    assertEquals(tickersDTO.getResults(), mockResponse.getResults());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    public void getTickersByConfigNoCursorOKTest() {
+        TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
+                .searchTerm("TESLA")
+                .build();
+        TickerResult teslaResult = TickerResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc. Common Stock")
+                .market("stocks")
+                .currencyName("usd")
+                .primaryExchange("XNAS")
+                .build();
+        TickersResponse mockResponse = TickersResponse.builder()
+                .results(List.of(teslaResult))
+                .count(1)
+                .nextUrl("")
+                .build();
+
+        when(referenceDataClient.getTickersByConfig(any(TickersSearchConfigDTO.class))).thenReturn(Mono.just(mockResponse));
+
+        Mono<TickersDTO> result = referenceDataService.getTickersByConfig(mockConfig);
 
         StepVerifier.create(result)
                 .consumeNextWith(tickersDTO -> {
@@ -61,13 +107,38 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersErrorTest() {
+    public void getTickersByConfigNoResultsOkTest() {
+
+        TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
+                .searchTerm("XYZ")
+                .build();
+
+        TickersResponse mockResponse = TickersResponse.builder()
+                .results(List.of())
+                .count(0)
+                .nextUrl("")
+                .build();
+
+        when(referenceDataClient.getTickersByConfig(any(TickersSearchConfigDTO.class))).thenReturn(Mono.just(mockResponse));
+
+        Mono<TickersDTO> result = referenceDataService.getTickersByConfig(mockConfig);
+
+        StepVerifier.create(result)
+                .consumeNextWith(tickersDTO -> {
+                    assertEquals(tickersDTO.getNextCursor(), "");
+                    assertEquals(tickersDTO.getResults(), mockResponse.getResults());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    public void getTickersByConfigErrorTest() {
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder().build();
         PolygonClientErrorException mockException = new PolygonClientErrorException("Bad Request");
 
-        when(referenceDataClient.getTickers(mockConfig)).thenReturn(Mono.error(mockException));
+        when(referenceDataClient.getTickersByConfig(mockConfig)).thenReturn(Mono.error(mockException));
 
-        Mono<TickersDTO> result = referenceDataService.getTickers(mockConfig);
+        Mono<TickersDTO> result = referenceDataService.getTickersByConfig(mockConfig);
 
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
@@ -77,12 +148,22 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByCursorOkTest() {
+    public void getTickersByCursorWithCursorOkTest() {
         String cursor = "YWN0aXZlPXRyd1";
         String nextCursor = "YWN0aXZlPXRyd2";
 
-        TickerResult teslaResult = TickersResultHelper.createTickerResult("TSLA", "Tesla, Inc. Common Stock", "stocks", "usd", "XNAS");
-        TickersResponse mockResponse = TickersResponseHelper.createTickersResponse(List.of(teslaResult), 1, "https://api.polygon.io/v3/reference/tickers?cursor=" + nextCursor);
+        TickerResult teslaResult = TickerResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc. Common Stock")
+                .market("stocks")
+                .currencyName("usd")
+                .primaryExchange("XNAS")
+                .build();
+        TickersResponse mockResponse = TickersResponse.builder()
+                .results(List.of(teslaResult))
+                .count(1)
+                .nextUrl("https://api.polygon.io/v3/reference/tickers?cursor=" + nextCursor)
+                .build();
 
         when(referenceDataClient.getTickersByCursor(cursor)).thenReturn(Mono.just(mockResponse));
 
@@ -91,6 +172,35 @@ public class ReferenceDataServiceTest {
         StepVerifier.create(result)
                 .consumeNextWith(tickersDTO -> {
                     assertEquals(tickersDTO.getNextCursor(), nextCursor);
+                    assertEquals(tickersDTO.getResults(), mockResponse.getResults());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    public void getTickersByCursorNoCursorOkTest() {
+        String cursor = "YWN0aXZlPXRyd2";
+
+        TickerResult teslaResult = TickerResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc. Common Stock")
+                .market("stocks")
+                .currencyName("usd")
+                .primaryExchange("XNAS")
+                .build();
+        TickersResponse mockResponse = TickersResponse.builder()
+                .results(List.of(teslaResult))
+                .count(1)
+                .nextUrl("")
+                .build();
+
+        when(referenceDataClient.getTickersByCursor(cursor)).thenReturn(Mono.just(mockResponse));
+
+        Mono<TickersDTO> result = referenceDataService.getTickersByCursor(cursor);
+
+        StepVerifier.create(result)
+                .consumeNextWith(tickersDTO -> {
+                    assertEquals(tickersDTO.getNextCursor(), "");
                     assertEquals(tickersDTO.getResults(), mockResponse.getResults());
                 })
                 .verifyComplete();
@@ -113,16 +223,24 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    @Disabled
     void getTickerDetailTest() {
         String tickerSymbol = "TSLA";
-        TickerDetailResult mockDetailResult = TickerDetailResultHelper.createTickerDetailResult();
-        TickerDetailResponse mockDetailResponse = TickerDetailResponseHelper.createTickerDetailResponse(mockDetailResult);
-        TickerDetail mockDetail = TickerDetailResultHelper.buildTickerDetailFromResult(mockDetailResult);
 
-        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(mockDetailResponse));
-        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.empty());
-        when(tickerDetailRepository.save(mockDetail)).thenReturn(Mono.just(mockDetail));
+        TickerDetail mockDetail = TickerDetail.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("Tesla, Inc.")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        when(transactionalOperator.transactional(any(Mono.class)))
+                .thenAnswer((Answer<Mono<?>>) invocation -> {
+                    Mono<?> mono = invocation.getArgument(0);
+                    return Mono.from(mono);
+                });
+
+        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.just(mockDetail));
 
         Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
 
