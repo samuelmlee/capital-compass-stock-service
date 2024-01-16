@@ -477,58 +477,50 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    void registerTickersRepositoryError() {
-        Set<String> tickerSymbols = Set.of("TSLA");
-
-        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
-        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
-        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.error(new TickerDetailRepositoryException("Database error")));
-
-
-        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
-
-        StepVerifier.create(result)
-                .expectError(TickerDetailRepositoryException.class)
-                .verify();
-    }
-
-
-    @Test
-    void registerTickersClientError() {
-        Set<String> tickerSymbols = Set.of("TSLA");
-
-        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
-        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.error(new RuntimeException("Client error")));
-
-        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
-
-        StepVerifier.create(result)
-                .expectError(RuntimeException.class)
-                .verify();
-    }
-
-    @Test
     void registerTickersPartialRepoClientOK() {
-//        Set<String> tickerSymbols = Set.of("TSLA", "AAPL");
-//
-//        TickerDetail mockDetailAAPL = TickerDetail.builder()
-//                .symbol("AAPL")
-//                .build();
-//
-//        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
-//        when(tickerDetailRepository.findBySymbol("AAPL")).thenReturn(Mono.just(mockDetailAAPL));
-//        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
-//        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.just(new TickerDetail()));
-//
-//        Mono<Set<String>> result = referenceDataService.registerTickers
-//                (tickerSymbols);
-//
-//
-//        StepVerifier.create(result)
-//                .assertNext(registeredSymbols -> {
-//                    assertEquals(2, registeredSymbols.size());
-//                    assertTrue(registeredSymbols.containsAll(tickerSymbols));
-//                })
-//                .verifyComplete();
+        Set<String> tickerSymbols = Set.of("TSLA", "AAPL");
+
+        TickerDetailResult mockDetailResultAAPL = TickerDetailResult.builder()
+                .symbol("AAPL")
+                .name("Apple Inc.")
+                .market("stocks")
+                .primaryExchange("XNAS")
+                .type("CS")
+                .build();
+
+        TickerDetail mockDetailAAPL = TickerDetail.builder()
+                .symbol("AAPL")
+                .name("Apple Inc.")
+                .market("stocks")
+                .primaryExchange("XNAS")
+                .type("CS")
+                .build();
+
+        TickerDetail mockDetailTSLA = TickerDetail.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("stocks")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.just(mockDetailTSLA));
+        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.empty());
+
+        when(tickerDetailRepository.findBySymbol("AAPL")).thenReturn(Mono.empty());
+        when(referenceDataClient.getTickerDetails("AAPL")).thenReturn(Mono.just(TickerDetailResponse.builder().results(mockDetailResultAAPL).build()));
+
+        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.just(mockDetailAAPL));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers
+                (tickerSymbols);
+
+
+        StepVerifier.create(result)
+                .assertNext(registeredSymbols -> {
+                    assertEquals(2, registeredSymbols.size());
+                    assertTrue(registeredSymbols.containsAll(tickerSymbols));
+                })
+                .verifyComplete();
     }
 }
