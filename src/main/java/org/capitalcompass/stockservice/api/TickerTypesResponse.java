@@ -1,11 +1,17 @@
 package org.capitalcompass.stockservice.api;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TickerTypesResponse {
-    private ArrayList<TypeResult> results;
+    private List<TickerTypeResult> results;
     private int count;
 }

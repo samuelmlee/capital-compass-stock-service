@@ -1,32 +1,37 @@
 package org.capitalcompass.capitalcompassstocks.service;
 
 
-import org.capitalcompass.stockservice.api.TickerDetailResponse;
-import org.capitalcompass.stockservice.api.TickerDetailResult;
-import org.capitalcompass.stockservice.api.TickerResult;
-import org.capitalcompass.stockservice.api.TickersResponse;
+import io.r2dbc.spi.R2dbcBadGrammarException;
+import org.capitalcompass.stockservice.api.*;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
 import org.capitalcompass.stockservice.dto.TickerDetailDTO;
+import org.capitalcompass.stockservice.dto.TickerTypesDTO;
 import org.capitalcompass.stockservice.dto.TickersDTO;
 import org.capitalcompass.stockservice.dto.TickersSearchConfigDTO;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
+import org.capitalcompass.stockservice.exception.TickerDetailRepositoryException;
+import org.capitalcompass.stockservice.exception.TickerNotFoundException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.service.ReferenceDataService;
+import org.joda.time.Partial;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +48,7 @@ public class ReferenceDataServiceTest {
     private ReferenceDataService referenceDataService;
 
     @Test
-    public void getTickersByConfigWithCursorOkTest() {
+    public void getTickersByConfigWithCursorOK() {
         String nextCursor = "YWN0aXZlPXRyd2";
 
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
@@ -76,7 +81,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByConfigNoCursorOKTest() {
+    public void getTickersByConfigNoCursorOK() {
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
                 .searchTerm("TESLA")
                 .build();
@@ -107,7 +112,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByConfigNoResultsOkTest() {
+    public void getTickersByConfigNoResultsOK() {
 
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder()
                 .searchTerm("XYZ")
@@ -132,7 +137,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByConfigErrorTest() {
+    public void getTickersByConfigError() {
         TickersSearchConfigDTO mockConfig = TickersSearchConfigDTO.builder().build();
         PolygonClientErrorException mockException = new PolygonClientErrorException("Bad Request");
 
@@ -148,7 +153,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByCursorWithCursorOkTest() {
+    public void getTickersByCursorWithCursorOK() {
         String cursor = "YWN0aXZlPXRyd1";
         String nextCursor = "YWN0aXZlPXRyd2";
 
@@ -178,7 +183,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByCursorNoCursorOkTest() {
+    public void getTickersByCursorNoCursorOK() {
         String cursor = "YWN0aXZlPXRyd2";
 
         TickerResult teslaResult = TickerResult.builder()
@@ -207,7 +212,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickersByCursorErrorTest() {
+    public void getTickersByCursorError() {
         String cursor = "YWN0aXZlPXRyd1";
         PolygonClientErrorException mockException = new PolygonClientErrorException("Bad Request");
 
@@ -223,22 +228,16 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    void getTickerDetailFromRepoOKTest() {
+    void getTickerDetailFromRepoOK() {
         String tickerSymbol = "TSLA";
 
         TickerDetail mockDetail = TickerDetail.builder()
                 .symbol("TSLA")
                 .name("Tesla, Inc.")
-                .market("Tesla, Inc.")
+                .market("stocks")
                 .primaryExchange("NASDAQ")
                 .type("Equity")
                 .build();
-
-        when(transactionalOperator.transactional(any(Mono.class)))
-                .thenAnswer((Answer<Mono<?>>) invocation -> {
-                    Mono<?> mono = invocation.getArgument(0);
-                    return Mono.from(mono);
-                });
 
         when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
 
@@ -253,17 +252,30 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void getTickerDetailFromRepoErrorTest() {
+    public void getTickerDetailFromRepoError() {
+        String tickerSymbol = "TSLA";
+
+        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+
+        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.error(new R2dbcBadGrammarException()));
+
+        Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof TickerDetailRepositoryException
+                )
+                .verify();
     }
 
     @Test
-    void getTickerDetailFromClientOKTest() {
+    void getTickerDetailFromClientOK() {
         String tickerSymbol = "TSLA";
 
         TickerDetail mockDetail = TickerDetail.builder()
                 .symbol("TSLA")
                 .name("Tesla, Inc.")
-                .market("Tesla, Inc.")
+                .market("stocks")
                 .primaryExchange("NASDAQ")
                 .type("Equity")
                 .build();
@@ -271,7 +283,7 @@ public class ReferenceDataServiceTest {
         TickerDetailResult mockResult = TickerDetailResult.builder()
                 .symbol("TSLA")
                 .name("Tesla, Inc.")
-                .market("Tesla, Inc.")
+                .market("stocks")
                 .primaryExchange("NASDAQ")
                 .type("Equity")
                 .build();
@@ -279,12 +291,6 @@ public class ReferenceDataServiceTest {
         TickerDetailResponse mockResponse = TickerDetailResponse.builder()
                 .results(mockResult)
                 .build();
-
-        when(transactionalOperator.transactional(any(Mono.class)))
-                .thenAnswer((Answer<Mono<?>>) invocation -> {
-                    Mono<?> mono = invocation.getArgument(0);
-                    return Mono.from(mono);
-                });
 
         when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(mockResponse));
 
@@ -299,10 +305,268 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    void getTickerDetailFromClientNoResultTest() {
+    void getTickerDetailFromClientNoResult() {
+        String tickerSymbol = "TSLA";
+
+        TickerDetailResponse mockResponse = TickerDetailResponse.builder()
+                .results(null)
+                .build();
+
+        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(mockResponse));
+
+        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.empty());
+
+        Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof TickerNotFoundException
+                )
+                .verify();
     }
 
     @Test
-    public void getTickerDetailFromClientErrorTest() {
+    public void getTickerDetailFromClientError() {
+        String tickerSymbol = "TSLA";
+
+        when(referenceDataClient.getTickerDetails(tickerSymbol)).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+
+        when(tickerDetailRepository.findBySymbol(tickerSymbol)).thenReturn(Mono.error(new R2dbcBadGrammarException()));
+
+        Mono<TickerDetailDTO> result = referenceDataService.getTickerDetail(tickerSymbol);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof TickerDetailRepositoryException
+                )
+                .verify();
+    }
+
+    @Test
+    void getTickerTypesOK() {
+        TickerTypeResult mockResult1 = new TickerTypeResult("CS", "Common Stock");
+        TickerTypeResult mockResult2 = new TickerTypeResult("PFD", "Preferred Stock");
+
+
+        TickerTypesResponse mockResponse = TickerTypesResponse.builder()
+                .results(List.of(mockResult1, mockResult2))
+                .count(2)
+                .build();
+
+
+        when(referenceDataClient.getTickerTypes()).thenReturn(Mono.just(mockResponse));
+
+        Mono<TickerTypesDTO> result = referenceDataService.getTickerTypes();
+        StepVerifier.create(result)
+                .consumeNextWith(tickerTypesDTO -> {
+                    assertEquals(tickerTypesDTO.getResults().size(), 2);
+                    assertTrue(tickerTypesDTO.getResults().contains(mockResult1));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getTickerTypesError() {
+        when(referenceDataClient.getTickerTypes()).thenReturn(Mono.error(new PolygonClientErrorException("Server Error")));
+
+        Mono<TickerTypesDTO> result = referenceDataService.getTickerTypes();
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof PolygonClientErrorException
+                )
+                .verify();
+    }
+
+    @Test
+    void registerTickersRepoFoundOK() {
+        Set<String> tickerSymbol = Set.of("TSLA");
+
+        TickerDetail mockDetailTSLA = TickerDetail.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("stocks")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        when(referenceDataClient.getTickerDetails(anyString())).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.just(mockDetailTSLA));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbol);
+
+        StepVerifier.create(result)
+                .consumeNextWith(registeredSymbols -> {
+                    assertEquals(registeredSymbols, tickerSymbol);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void registerTickersRepositoryFindError() {
+        Set<String> tickerSymbols = Set.of("TSLA");
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.error(new R2dbcBadGrammarException()));
+        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof TickerDetailRepositoryException
+                )
+                .verify();
+    }
+
+    @Test
+    void registerTickersClientFoundOK() {
+        Set<String> tickerSymbol = Set.of("TSLA");
+
+        TickerDetail mockDetailTSLA = TickerDetail.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("stocks")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        TickerDetailResult mockDetailResultTSLA = TickerDetailResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("stocks")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
+
+        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.just(mockDetailTSLA));
+
+        when(referenceDataClient.getTickerDetails(anyString())).thenReturn(Mono.just(TickerDetailResponse.builder().results(mockDetailResultTSLA).build()));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbol);
+
+        StepVerifier.create(result)
+                .consumeNextWith(registeredSymbols -> {
+                    assertEquals(registeredSymbols, tickerSymbol);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void registerTickersClientFoundSaveError() {
+        Set<String> tickerSymbols = Set.of("TSLA");
+
+        TickerDetailResult mockDetailResultTSLA = TickerDetailResult.builder()
+                .symbol("TSLA")
+                .name("Tesla, Inc.")
+                .market("stocks")
+                .primaryExchange("NASDAQ")
+                .type("Equity")
+                .build();
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
+
+        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.error(new R2dbcBadGrammarException()));
+
+        when(referenceDataClient.getTickerDetails(anyString())).thenReturn(Mono.just(TickerDetailResponse.builder().results(mockDetailResultTSLA).build()));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof TickerDetailRepositoryException
+                )
+                .verify();
+    }
+
+
+    To thoroughly test the registerTickers method in your ReferenceDataService class, consider writing tests that cover a variety of scenarios. Apart from the tests you already have, here are some additional tests that could be beneficial:
+
+            1. Registration with Empty Input
+    This test checks the behavior when an empty set of ticker symbols is passed to the method.
+
+            java
+    Copy code
+    @Test
+    void registerTickersWithEmptyInput() {
+        Set<String> tickerSymbols = Collections.emptySet();
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
+
+        StepVerifier.create(result)
+                .expectNextMatches(registeredSymbols -> registeredSymbols.isEmpty())
+                .verifyComplete();
+    }
+2. Repository Error Handling
+    This test ensures that the method handles errors correctly if there's an issue saving to the repository.
+
+    java
+    Copy code
+    @Test
+    void registerTickersRepositoryError() {
+        Set<String> tickerSymbols = Set.of("TSLA");
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
+        when(referenceDataClient.getTickerDetails("TSL
+                A")).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+                when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.error(new TickerDetailRepositoryException("Database error")));
+
+        scss
+        Copy code
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
+
+        StepVerifier.create(result)
+                .expectError(TickerDetailRepositoryException.class)
+                .verify();
+    }
+
+    less
+    Copy code
+
+### 3. Client Error Handling
+
+    This test checks how the method handles errors from the external client.
+
+            ```java
+    @Test
+    void registerTickersClientError() {
+        Set<String> tickerSymbols = Set.of("TSLA");
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
+        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.error(new RuntimeException("Client error")));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers(tickerSymbols);
+
+        StepVerifier.create(result)
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    @Test
+    void registerTickersPartialRepoClientOK() {
+        Set<String> tickerSymbols = Set.of("TSLA", "AAPL");
+
+        TickerDetail mockDetailAAPL = TickerDetail.builder()
+                .symbol("AAPL")
+                .build();
+
+        when(tickerDetailRepository.findBySymbol("TSLA")).thenReturn(Mono.empty());
+        when(tickerDetailRepository.findBySymbol("AAPL")).thenReturn(Mono.just(mockDetailAAPL));
+        when(referenceDataClient.getTickerDetails("TSLA")).thenReturn(Mono.just(TickerDetailResponse.builder().build()));
+        when(tickerDetailRepository.save(any(TickerDetail.class))).thenReturn(Mono.just(new TickerDetail()));
+
+        Mono<Set<String>> result = referenceDataService.registerTickers
+                (tickerSymbols);
+
+
+        StepVerifier.create(result)
+                .assertNext(registeredSymbols -> {
+                    assertEquals(2, registeredSymbols.size());
+                    assertTrue(registeredSymbols.containsAll(tickerSymbols));
+                })
+                .verifyComplete();
     }
 }

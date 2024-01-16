@@ -2,12 +2,12 @@ package org.capitalcompass.stockservice.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import org.capitalcompass.stockservice.api.TypeResult;
+import org.capitalcompass.stockservice.api.TickerTypeResult;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
 public class TickerTypesDTO {
-    private ArrayList<TypeResult> results;
+    private List<TickerTypeResult> results;
 }

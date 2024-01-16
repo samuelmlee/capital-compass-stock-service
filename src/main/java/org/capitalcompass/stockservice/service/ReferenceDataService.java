@@ -13,7 +13,7 @@ import org.capitalcompass.stockservice.exception.TickerDetailRepositoryException
 import org.capitalcompass.stockservice.exception.TickerNotFoundException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -36,8 +36,6 @@ public class ReferenceDataService {
     private final ReferenceDataClient referenceDataClient;
 
     private final TickerDetailRepository tickerDetailRepository;
-
-    private final TransactionalOperator transactionalOperator;
 
     /**
      * Retrieves a list of tickers based on the specified search configuration.
@@ -115,6 +113,7 @@ public class ReferenceDataService {
      * @return A Mono of a Set containing the symbols of successfully registered tick
      * ers.
      */
+    @Transactional
     public Mono<Set<String>> registerTickers(Set<String> tickerSymbols) {
         return Flux.fromIterable(tickerSymbols)
                 .flatMap(this::getAndSaveTickerDetail)
@@ -146,8 +145,7 @@ public class ReferenceDataService {
                 .onErrorResume(e -> {
                     log.error("Error fetching ticker detail for symbol: {}", tickerSymbol);
                     return Mono.error(new TickerDetailRepositoryException("Error accessing database for ticker symbol:" + tickerSymbol));
-                })
-                .as(transactionalOperator::transactional);
+                });
     }
 
     /**
@@ -196,8 +194,7 @@ public class ReferenceDataService {
                 .onErrorResume(e -> {
                     log.error("Error saving ticker detail: {}", detail, e);
                     return Mono.error(new TickerDetailRepositoryException("Error accessing database to save Ticker Detail :" + detail));
-                })
-                .as(transactionalOperator::transactional);
+                });
     }
 
     /**
