@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
-import org.capitalcompass.stockservice.dto.TickerDetailDTO;
-import org.capitalcompass.stockservice.dto.TickerTypesDTO;
-import org.capitalcompass.stockservice.dto.TickersDTO;
-import org.capitalcompass.stockservice.dto.TickersSearchConfigDTO;
+import org.capitalcompass.stockservice.dto.*;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.exception.TickerDetailRepositoryException;
 import org.capitalcompass.stockservice.exception.TickerNotFoundException;
@@ -45,7 +42,7 @@ public class ReferenceDataService {
      */
     public Mono<TickersDTO> getTickersByConfig(TickersSearchConfigDTO config) {
         return referenceDataClient.getTickersByConfig(config).flatMap(response -> {
-            String nextCursor = getCursorFromTickersResponse(response.getNextUrl());
+            String nextCursor = getNextCursorFromResponse(response.getNextUrl());
 
             TickersDTO dto = TickersDTO.builder()
                     .results(response.getResults())
@@ -64,7 +61,7 @@ public class ReferenceDataService {
     public Mono<TickersDTO> getTickersByCursor(String cursor) {
 
         return referenceDataClient.getTickersByCursor(cursor).flatMap(response -> {
-            String nextCursor = getCursorFromTickersResponse(response.getNextUrl());
+            String nextCursor = getNextCursorFromResponse(response.getNextUrl());
 
             TickersDTO dto = TickersDTO.builder()
                     .results(response.getResults())
@@ -104,6 +101,36 @@ public class ReferenceDataService {
         return referenceDataClient.getTickerTypes().map(response -> TickerTypesDTO.builder()
                 .results(response.getResults())
                 .build());
+    }
+
+    /**
+     * Retrieves news articles associated with a given ticker symbol and wraps the response
+     * in a {@link TickerNewsDTO}.
+     * <p>
+     * This method calls the {@link ReferenceDataClient#getTickerNews(String)} method to fetch news
+     * related to the provided ticker symbol. It then processes the response to extract the next cursor
+     * and encapsulates the result along with the cursor in a {@link TickerNewsDTO}.
+     * <p>
+     * The method uses a flatMap operation to transform the data received from the
+     * {@link ReferenceDataClient} into a {@link Mono} of {@link TickerNewsDTO}, ensuring that
+     * the asynchronous nature of the operation is maintained.
+     *
+     * @param tickerSymbol The ticker symbol for which the news is to be retrieved. This should be a
+     *                     non-null and valid string representing a ticker symbol.
+     * @return A {@link Mono} of {@link TickerNewsDTO} containing the news articles and the next cursor
+     * for pagination purposes. In case of an error in the underlying client call, the error
+     * will be propagated downstream.
+     */
+    public Mono<TickerNewsDTO> getTickerNews(String tickerSymbol) {
+        return referenceDataClient.getTickerNews(tickerSymbol).flatMap(response -> {
+            String nextCursor = getNextCursorFromResponse(response.getNextUrl());
+
+            TickerNewsDTO dto = TickerNewsDTO.builder()
+                    .results(response.getResults())
+                    .nextCursor(nextCursor)
+                    .build();
+            return Mono.just(dto);
+        });
     }
 
     /**
@@ -171,7 +198,7 @@ public class ReferenceDataService {
      * @param uri The URI string to extract the cursor from.
      * @return The extracted cursor or an empty string if not found.
      */
-    private String getCursorFromTickersResponse(String uri) {
+    private String getNextCursorFromResponse(String uri) {
         try {
             MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(uri).build().getQueryParams();
             String cursor = parameters.getFirst("cursor");

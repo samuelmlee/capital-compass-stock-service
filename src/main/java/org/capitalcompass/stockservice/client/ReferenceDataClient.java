@@ -2,6 +2,7 @@ package org.capitalcompass.stockservice.client;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.stockservice.api.TickerDetailResponse;
+import org.capitalcompass.stockservice.api.TickerNewsResponse;
 import org.capitalcompass.stockservice.api.TickerTypesResponse;
 import org.capitalcompass.stockservice.api.TickersResponse;
 import org.capitalcompass.stockservice.dto.TickersSearchConfigDTO;
@@ -110,6 +111,39 @@ public class ReferenceDataClient {
                 )
                 .onErrorResume(Exception.class, ex ->
                         Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker Types: " + ex.getMessage()))
+                );
+    }
+
+    /**
+     * Retrieves news related to a specific ticker symbol from the Polygon API.
+     * <p>
+     * This method sends a GET request to the Polygon API's news endpoint, fetching news articles
+     * associated with the provided ticker symbol. The results are returned as a Mono of
+     * {@link TickerNewsResponse}, which encapsulates the news data.
+     * <p>
+     * In case of any errors during the WebClient call, such as a {@link WebClientResponseException},
+     * a {@link PolygonClientErrorException} is propagated with the relevant error message.
+     *
+     * @param tickerSymbol The ticker symbol for which news is to be retrieved. It should be a
+     *                     non-null and valid ticker symbol.
+     * @return A {@link Mono} containing {@link TickerNewsResponse} with news articles related
+     * to the given ticker symbol. In case of an error, a {@link PolygonClientErrorException}
+     * is propagated.
+     * @throws PolygonClientErrorException if there is a WebClientResponseException or any other network error
+     *                                     during the API call.
+     */
+    public Mono<TickerNewsResponse> getTickerNews(String tickerSymbol) {
+        return webClient.get().uri(uri ->
+                        uri.path("/v2/reference/news")
+                                .queryParam("ticker", tickerSymbol)
+                                .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(TickerNewsResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex ->
+                        Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Ticker News : " + ex.getMessage()))
+                )
+                .onErrorResume(Exception.class, ex ->
+                        Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker News: " + ex.getMessage()))
                 );
     }
 

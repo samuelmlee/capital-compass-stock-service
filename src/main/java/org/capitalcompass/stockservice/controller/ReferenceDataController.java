@@ -77,4 +77,14 @@ public class ReferenceDataController {
     public Mono<TickerTypesDTO> getTickerTypes() {
         return referenceDataService.getTickerTypes();
     }
+
+    /**
+     * Retrieves the most recent news articles relating to a stock ticker symbol, including a summary of the article and a link to the original source.
+     *
+     * @return A Mono of TickerNewsDTO containing the list of news articles.
+     */
+    @GetMapping("/news")
+    public Mono<TickerNewsDTO> getTickerNews(@RequestParam(required = false) String ticker) {
+        return referenceDataService.getTickerNews(ticker);
+    }
 }
