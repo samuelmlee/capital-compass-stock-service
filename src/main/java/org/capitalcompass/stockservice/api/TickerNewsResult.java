@@ -10,7 +10,6 @@ import java.util.List;
 @Data
 public class TickerNewsResult {
 
-    private String id;
     private TickerNewsPublisher publisher;
     private String title;
     private String author;
