@@ -4,7 +4,10 @@ import org.capitalcompass.stockservice.api.DailyBar;
 import org.capitalcompass.stockservice.api.TickerSnapShotResponse;
 import org.capitalcompass.stockservice.api.TickerSnapshot;
 import org.capitalcompass.stockservice.client.MarketDataClient;
+import org.capitalcompass.stockservice.dto.TickerDetailDTO;
 import org.capitalcompass.stockservice.dto.TickerSnapshotDTO;
+import org.capitalcompass.stockservice.dto.TickerSnapshotMapDTO;
+import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
 import org.capitalcompass.stockservice.service.MarketDataService;
 import org.capitalcompass.stockservice.service.ReferenceDataService;
@@ -195,11 +198,148 @@ public class MarketDataServiceTest {
         mockTickerSnapshotMap.put("AAPL", mockAppleTickerSnapshotDTO);
         mockTickerSnapshotMap.put("MSFT", mockMicrosoftTickerSnapshotDTO);
 
+        TickerDetailDTO mockAppleTickerDetail = TickerDetailDTO.builder()
+                .result(TickerDetail.builder().name("Apple Inc.").build())
+                .build();
+
+        TickerDetailDTO mockMicrosoftTickerDetail = TickerDetailDTO.builder()
+                .result(TickerDetail.builder().name("Microsoft Corp").build())
+                .build();
+
+
         when(marketDataClient.getTickerSnapShots(tickerSymbols)).thenReturn(Flux.fromIterable(mockTickerSnapshots));
+        when(referenceDataService.getTickerDetail(anyString())).thenReturn(Mono.just(mockAppleTickerDetail))
+                .thenReturn(Mono.just(mockMicrosoftTickerDetail));
 
-        StepVerifier.create(marketDataService.getTickerSnapshotMap(tickerSymbols))
-                .expectNextMatches(mapDto -> mapDto.getTickers().equals(mockTickerSnapshotMap))
+        Mono<TickerSnapshotMapDTO> responseMono = marketDataService.getTickerSnapshotMap(tickerSymbols);
+
+        StepVerifier.create(responseMono).consumeNextWith(tickerSnapshotMapDTO -> {
+                    assertEquals(tickerSnapshotMapDTO.getTickers(), mockTickerSnapshotMap);
+                })
                 .verifyComplete();
+    }
 
+    @Test
+    public void getTickerSnapshotMapSnapshotError() {
+        Set<String> tickerSymbols = Set.of("AAPL", "MSFT");
+
+        PolygonClientErrorException mockException = new PolygonClientErrorException("Internal Server Error");
+
+        when(marketDataClient.getTickerSnapShots(tickerSymbols)).thenReturn(Flux.error(mockException));
+
+        Mono<TickerSnapshotMapDTO> responseMono = marketDataService.getTickerSnapshotMap(tickerSymbols);
+
+        StepVerifier.create(responseMono)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof PolygonClientErrorException
+                )
+                .verify();
+    }
+
+    @Test
+    public void getTickerSnapshotMapDetailError() {
+        Set<String> tickerSymbols = Set.of("AAPL", "MSFT");
+
+        TickerSnapshot mockAppleTickerSnapshot = TickerSnapshot.builder()
+                .updated(1706317200000000000L)
+                .symbol("AAPL")
+                .day(DailyBar.builder()
+                        .closePrice(192)
+                        .build())
+                .prevDay(DailyBar.builder()
+                        .closePrice(194)
+                        .build())
+                .build();
+
+        TickerSnapshot mockMicrosoftTickerSnapshot = TickerSnapshot.builder()
+                .updated(1706317200000000000L)
+                .symbol("MSFT")
+                .day(DailyBar.builder()
+                        .closePrice(403)
+                        .build())
+                .prevDay(DailyBar.builder()
+                        .closePrice(404)
+                        .build())
+                .build();
+
+        List<TickerSnapshot> mockTickerSnapshots = List.of(mockAppleTickerSnapshot, mockMicrosoftTickerSnapshot);
+
+        TickerDetailDTO mockAppleTickerDetail = TickerDetailDTO.builder()
+                .result(TickerDetail.builder().name("Apple Inc.").build())
+                .build();
+
+        PolygonClientErrorException mockException = new PolygonClientErrorException("Internal Server Error");
+
+        when(marketDataClient.getTickerSnapShots(tickerSymbols)).thenReturn(Flux.fromIterable(mockTickerSnapshots));
+        when(referenceDataService.getTickerDetail(anyString())).thenReturn(Mono.just(mockAppleTickerDetail))
+                .thenReturn(Mono.error(mockException));
+
+        Mono<TickerSnapshotMapDTO> responseMono = marketDataService.getTickerSnapshotMap(tickerSymbols);
+
+        StepVerifier.create(responseMono)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof PolygonClientErrorException
+                )
+                .verify();
+    }
+
+    @Test
+    public void getTickerSnapshotMapSnapshotMissing() {
+        Set<String> tickerSymbols = Set.of("AAPL", "MSFT");
+
+        TickerSnapshot mockAppleTickerSnapshot = TickerSnapshot.builder()
+                .updated(1706317200000000000L)
+                .symbol("AAPL")
+                .day(DailyBar.builder()
+                        .closePrice(192)
+                        .build())
+                .prevDay(DailyBar.builder()
+                        .closePrice(194)
+                        .build())
+                .build();
+
+        List<TickerSnapshot> mockTickerSnapshots = List.of(mockAppleTickerSnapshot);
+
+        Map<String, TickerSnapshotDTO> mockTickerSnapshotMap = new HashMap<>();
+
+        TickerSnapshotDTO mockMicrosoftTickerSnapshotDTO = TickerSnapshotDTO.builder()
+                .symbol("MSFT")
+                .name("Microsoft Corp")
+                .build();
+
+        TickerSnapshotDTO mockAppleTickerSnapshotDTO = TickerSnapshotDTO.builder()
+                .symbol("AAPL")
+                .name("Apple Inc.")
+                .updated(1706317200000000000L)
+                .day(DailyBar.builder()
+                        .closePrice(192)
+                        .build())
+                .prevDay(DailyBar.builder()
+                        .closePrice(194)
+                        .build())
+                .build();
+
+        mockTickerSnapshotMap.put("AAPL", mockAppleTickerSnapshotDTO);
+        mockTickerSnapshotMap.put("MSFT", mockMicrosoftTickerSnapshotDTO);
+
+        TickerDetailDTO mockAppleTickerDetail = TickerDetailDTO.builder()
+                .result(TickerDetail.builder().name("Apple Inc.").build())
+                .build();
+
+        TickerDetailDTO mockMicrosoftTickerDetail = TickerDetailDTO.builder()
+                .result(TickerDetail.builder().name("Microsoft Corp").build())
+                .build();
+
+
+        when(marketDataClient.getTickerSnapShots(tickerSymbols)).thenReturn(Flux.fromIterable(mockTickerSnapshots));
+        when(referenceDataService.getTickerDetail(anyString())).thenReturn(Mono.just(mockAppleTickerDetail))
+                .thenReturn(Mono.just(mockMicrosoftTickerDetail));
+
+        Mono<TickerSnapshotMapDTO> responseMono = marketDataService.getTickerSnapshotMap(tickerSymbols);
+
+        StepVerifier.create(responseMono).consumeNextWith(tickerSnapshotMapDTO -> {
+                    assertEquals(tickerSnapshotMapDTO.getTickers(), mockTickerSnapshotMap);
+                })
+                .verifyComplete();
     }
 }
