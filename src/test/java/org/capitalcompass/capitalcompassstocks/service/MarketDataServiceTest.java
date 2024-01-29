@@ -125,6 +125,30 @@ public class MarketDataServiceTest {
     }
 
     @Test
+    public void getTickerSnapshotsPartial() {
+        Set<String> tickerSymbols = Set.of("AAPL", "MSFT");
+
+        TickerSnapshot mockAppleTickerSnapshot = TickerSnapshot.builder()
+                .updated(1706317200000000000L)
+                .symbol("AAPL")
+                .day(DailyBar.builder()
+                        .closePrice(192)
+                        .build())
+                .prevDay(DailyBar.builder()
+                        .closePrice(194)
+                        .build())
+                .build();
+
+        List<TickerSnapshot> mockTickerSnapshots = List.of(mockAppleTickerSnapshot);
+
+        when(marketDataClient.getTickerSnapShots(anySet())).thenReturn(Flux.fromIterable(mockTickerSnapshots));
+
+        StepVerifier.create(marketDataService.getTickerSnapshots(tickerSymbols))
+                .expectNextSequence(mockTickerSnapshots)
+                .verifyComplete();
+    }
+
+    @Test
     public void getTickerSnapshotsError() {
         Set<String> tickerSymbols = Set.of("AAPL", "MSFT");
 
