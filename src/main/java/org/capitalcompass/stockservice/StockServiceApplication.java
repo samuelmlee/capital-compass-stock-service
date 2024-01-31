@@ -19,6 +19,6 @@ public class StockServiceApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        webSocketDataClient.connectAndSubscribe().subscribe();
+        webSocketDataClient.connectAndAuthenticate().subscribe();
     }
 }
