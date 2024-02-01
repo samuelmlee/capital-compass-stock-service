@@ -3,11 +3,14 @@ package org.capitalcompass.stockservice.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.ActionMessage;
 import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.api.StatusMessage;
+import org.capitalcompass.stockservice.api.SubscriptionMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -15,10 +18,14 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Component
+@RequiredArgsConstructor
 public class WebSocketDataHandler implements WebSocketHandler {
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Value("${polygon.api.key}")
@@ -43,8 +50,9 @@ public class WebSocketDataHandler implements WebSocketHandler {
                 }).then();
     }
 
-    public Mono<Void> subscribeToChannels(String channels) {
-        return currentSession.send(Mono.just(currentSession.textMessage(subscribeMessage(channels))));
+    public Mono<Void> subscribeToChannels(SubscriptionMessage message) {
+        String channels = message.getSymbols().stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
+        return sendSubscribeMessage(channels);
     }
 
     public Mono<Void> unsubscribeToChannels(String channels) {
@@ -52,6 +60,7 @@ public class WebSocketDataHandler implements WebSocketHandler {
     }
 
     private Mono<Void> processTickerMessage(List<PolygonMessage> messages) {
+        messagingTemplate.convertAndSend("/topic/ticker-price", messages);
         return Mono.empty();
     }
 
@@ -63,7 +72,7 @@ public class WebSocketDataHandler implements WebSocketHandler {
             case "auth_success":
                 return handleAuthSuccessStatus();
             case "success":
-                return handleSuccessStatus();
+                return handleSubSuccessStatus();
             default:
                 return handleUnknownStatus(statusMessage);
         }
@@ -75,10 +84,14 @@ public class WebSocketDataHandler implements WebSocketHandler {
 
     private Mono<Void> handleAuthSuccessStatus() {
         log.debug("Authenticated with Polygon WebSocket API");
-        return subscribeToChannels("AM.LPL,AM.MSFT");
+        return sendSubscribeMessage("AM.LPL,AM.MSFT");
     }
 
-    private Mono<Void> handleSuccessStatus() {
+    private Mono<Void> sendSubscribeMessage(String channels) {
+        return currentSession.send(Mono.just(currentSession.textMessage(subscribeMessage(channels))));
+    }
+
+    private Mono<Void> handleSubSuccessStatus() {
         log.debug("Subscription successful with Polygon WebSocket API");
         return Mono.empty();
     }
