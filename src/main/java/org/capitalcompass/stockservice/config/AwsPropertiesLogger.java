@@ -18,7 +18,7 @@ public class AwsPropertiesLogger implements ApplicationListener<ContextRefreshed
     public void onApplicationEvent(ContextRefreshedEvent event) {
         String r2dbcUrl = env.getProperty("spring.r2dbc.url");
 
-        log.info("spring.r2dbc.url: {}", r2dbcUrl);
+        log.debug("spring.r2dbc.url: {}", r2dbcUrl);
     }
 }
 

@@ -55,11 +55,11 @@ public class WebSocketDataHandler implements WebSocketHandler {
             return currentSession.send(Mono.just(currentSession.textMessage(authMessage())));
         }
         if (Objects.equals(statusMessage.getStatus(), "auth_success")) {
-            log.info("Authenticated with Polygon WebSocket API");
+            log.debug("Authenticated with Polygon WebSocket API");
             return subscribeToChannels("AM.LPL,AM.MSFT");
         }
         if (Objects.equals(statusMessage.getStatus(), "success")) {
-            log.info("Subscription successful with Polygon WebSocket API");
+            log.debug("Subscription successful with Polygon WebSocket API");
             return Mono.empty();
         }
         log.error("Authentication with Polygon WebSocket failed");

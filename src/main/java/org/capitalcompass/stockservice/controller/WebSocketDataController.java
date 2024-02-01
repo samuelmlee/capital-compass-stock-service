@@ -14,7 +14,7 @@ public class WebSocketDataController {
 
 //    @MessageMapping("/aggregate")
 //    public Flux<OutputMessage> message(InputMessage message) {
-//        log.info("Input Message "+message);
+//        log.debug("Input Message "+message);
 //        return OutputMessage
 //                .builder()
 //                .content(message.getContent())
