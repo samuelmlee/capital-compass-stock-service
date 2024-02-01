@@ -15,7 +15,6 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Objects;
 
 @Log4j2
 @Component
@@ -44,30 +43,6 @@ public class WebSocketDataHandler implements WebSocketHandler {
                 }).then();
     }
 
-    private Mono<Void> processTickerMessage(List<PolygonMessage> messages) {
-        return Mono.empty();
-    }
-
-    private Mono<Void> processStatusMessage(List<PolygonMessage> messages) {
-        StatusMessage statusMessage = (StatusMessage) messages.get(0);
-
-        if (Objects.equals(statusMessage.getStatus(), "connected")) {
-            return currentSession.send(Mono.just(currentSession.textMessage(authMessage())));
-        }
-        if (Objects.equals(statusMessage.getStatus(), "auth_success")) {
-            log.debug("Authenticated with Polygon WebSocket API");
-            return subscribeToChannels("AM.LPL,AM.MSFT");
-        }
-        if (Objects.equals(statusMessage.getStatus(), "success")) {
-            log.debug("Subscription successful with Polygon WebSocket API");
-            return Mono.empty();
-        }
-        log.error("Authentication with Polygon WebSocket failed");
-        return Mono.error(new RuntimeException("Authentication failed"));
-//        return Mono.empty();
-    }
-
-
     public Mono<Void> subscribeToChannels(String channels) {
         return currentSession.send(Mono.just(currentSession.textMessage(subscribeMessage(channels))));
     }
@@ -76,6 +51,42 @@ public class WebSocketDataHandler implements WebSocketHandler {
         return Mono.empty();
     }
 
+    private Mono<Void> processTickerMessage(List<PolygonMessage> messages) {
+        return Mono.empty();
+    }
+
+    private Mono<Void> processStatusMessage(List<PolygonMessage> messages) {
+        StatusMessage statusMessage = (StatusMessage) messages.get(0);
+        switch (statusMessage.getStatus()) {
+            case "connected":
+                return handleConnectedStatus();
+            case "auth_success":
+                return handleAuthSuccessStatus();
+            case "success":
+                return handleSuccessStatus();
+            default:
+                return handleUnknownStatus(statusMessage);
+        }
+    }
+
+    private Mono<Void> handleConnectedStatus() {
+        return currentSession.send(Mono.just(currentSession.textMessage(authMessage())));
+    }
+
+    private Mono<Void> handleAuthSuccessStatus() {
+        log.debug("Authenticated with Polygon WebSocket API");
+        return subscribeToChannels("AM.LPL,AM.MSFT");
+    }
+
+    private Mono<Void> handleSuccessStatus() {
+        log.debug("Subscription successful with Polygon WebSocket API");
+        return Mono.empty();
+    }
+
+    private Mono<Void> handleUnknownStatus(StatusMessage statusMessage) {
+        log.error("Unexpected status received from Polygon WebSocket: {}", statusMessage.getStatus());
+        return Mono.error(new RuntimeException("Unexpected status: " + statusMessage.getStatus()));
+    }
 
     private List<PolygonMessage> mapToPolygonMessages(String messages) {
         try {
