@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "ev", visible = true)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = TickerMessage.class, name = "T"),
+        @JsonSubTypes.Type(value = TickerMessage.class, name = "AM"),
         @JsonSubTypes.Type(value = StatusMessage.class, name = "status")
 })
 @Data

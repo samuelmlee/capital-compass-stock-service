@@ -36,7 +36,7 @@ public class WebSocketDataHandler implements WebSocketHandler {
                     switch (messages.get(0).getEvent()) {
                         case "status":
                             return processStatusMessage(messages);
-                        case "T":
+                        case "AM":
                             return processTickerMessage(messages);
                         default:
                             return Mono.empty();
@@ -56,17 +56,26 @@ public class WebSocketDataHandler implements WebSocketHandler {
         }
         if (Objects.equals(statusMessage.getStatus(), "auth_success")) {
             log.info("Authenticated with Polygon WebSocket API");
-//            return subscribeToChannels("AM.LPL,AM.MSFT");
-        } else {
-            log.error("Authentication with Polygon WebSocket failed");
-            return Mono.error(new RuntimeException("Authentication failed"));
+            return subscribeToChannels("AM.LPL,AM.MSFT");
         }
-        return Mono.empty();
+        if (Objects.equals(statusMessage.getStatus(), "success")) {
+            log.info("Subscription successful with Polygon WebSocket API");
+            return Mono.empty();
+        }
+        log.error("Authentication with Polygon WebSocket failed");
+        return Mono.error(new RuntimeException("Authentication failed"));
+//        return Mono.empty();
     }
+
 
     public Mono<Void> subscribeToChannels(String channels) {
         return currentSession.send(Mono.just(currentSession.textMessage(subscribeMessage(channels))));
     }
+
+    public Mono<Void> unsubscribeToChannels(String channels) {
+        return Mono.empty();
+    }
+
 
     private List<PolygonMessage> mapToPolygonMessages(String messages) {
         try {
