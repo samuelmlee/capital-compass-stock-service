@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class WebSocketDataHandler implements WebSocketHandler {
-    
+
     private final MessageParser messageParser;
 
     private final StatusMessageHandler statusMessageHandler;
@@ -33,8 +33,6 @@ public class WebSocketDataHandler implements WebSocketHandler {
 
                     PolygonMessageHandler handler = resolveMessageHandler(messages.get(0).getEvent());
                     return handler.handleMessages(messages, session);
-
-
                 }).then();
     }
 
@@ -48,16 +46,4 @@ public class WebSocketDataHandler implements WebSocketHandler {
                 return defaultMessageHandler;
         }
     }
-
-    public Mono<Void> subscribeToChannels(String message) {
-//        String channels = message.getSymbols().stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
-//        return sendSubscribeMessage(channels);
-        return Mono.empty();
-    }
-
-    public Mono<Void> unsubscribeToChannels(String channels) {
-        return Mono.empty();
-    }
-
-
 }
