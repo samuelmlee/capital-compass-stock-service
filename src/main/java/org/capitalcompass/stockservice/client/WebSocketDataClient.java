@@ -2,6 +2,7 @@ package org.capitalcompass.stockservice.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.capitalcompass.stockservice.handler.WebSocketDataHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
