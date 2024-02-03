@@ -1,24 +1,29 @@
 package org.capitalcompass.stockservice.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.http.codec.cbor.Jackson2CborDecoder;
+import org.springframework.http.codec.cbor.Jackson2CborEncoder;
+import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
+import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketServerConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketServerConfig {
 
-
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("https://localhost:4200");
+    @Bean
+    public RSocketMessageHandler rsocketMessageHandler() {
+        RSocketMessageHandler handler = new RSocketMessageHandler();
+        handler.setRSocketStrategies(rsocketStrategies());
+        return handler;
     }
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+    @Bean
+    public RSocketStrategies rsocketStrategies() {
+        return RSocketStrategies.builder()
+                .encoders(encoders -> encoders.add(new Jackson2CborEncoder()))
+                .decoders(decoders -> decoders.add(new Jackson2CborDecoder()))
+                .routeMatcher(new PathPatternRouteMatcher())
+                .build();
     }
 }

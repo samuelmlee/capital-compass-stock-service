@@ -9,6 +9,11 @@ spring:
       - aws-secretsmanager:/secret/stocks/
       - aws-parameterstore:/config/stocks/
       - aws-parameterstore:/config/application/
+  rsocket:
+    server:
+      mapping-path: "/rsocket"
+      transport: "websocket"
+
 
 management:
   endpoints:
