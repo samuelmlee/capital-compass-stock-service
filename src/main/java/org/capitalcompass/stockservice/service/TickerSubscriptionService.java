@@ -1,7 +1,7 @@
 package org.capitalcompass.stockservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.stockservice.dto.SubscriptionMessageDTO;
+import org.capitalcompass.stockservice.dto.TickerSubscriptionMessageDTO;
 import org.capitalcompass.stockservice.handler.WebSocketSessionManager;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -18,7 +18,7 @@ public class TickerSubscriptionService {
 
     private final WebSocketSessionManager webSocketSessionManager;
 
-    public Mono<Void> updateClientSubscriptions(SubscriptionMessageDTO messageDTO, String clientId) {
+    public Mono<Void> updateClientSubscriptions(TickerSubscriptionMessageDTO messageDTO, String clientId) {
         clientSubscriptions.put(clientId, new HashSet<>(messageDTO.getSymbols()));
         return sendSubscribeMessage();
     }
