@@ -4,25 +4,41 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.stockservice.api.ActionMessage;
+import org.capitalcompass.stockservice.exception.PolygonWebSocketStateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
-public class ControlMessageSender {
+public class WebSocketSessionManager {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Value("${polygon.api.key}")
     private String polygonSecret;
 
-    public Mono<Void> sendAuthMessage(WebSocketSession webSocketSession) {
-        return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildAuthMessage())));
+    private WebSocketSession webSocketSession;
+
+    public synchronized void setWebSocketSession(WebSocketSession webSocketSession) {
+        this.webSocketSession = webSocketSession;
     }
 
-    public Mono<Void> sendSubscribeMessage(WebSocketSession webSocketSession, String channels) {
-        return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildSubscribeMessage(channels))));
+    public synchronized Mono<Void> sendAuthMessage() {
+        if (webSocketSession != null && webSocketSession.isOpen()) {
+            return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildAuthMessage())));
+        }
+        return Mono.error(new IllegalStateException("WebSocket session is not open or available."));
+    }
+
+    public synchronized Mono<Void> sendSubscribeMessage(Set<String> channels) {
+        if (webSocketSession != null && webSocketSession.isOpen()) {
+            return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildSubscribeMessage(channels))));
+        }
+        return Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available."));
     }
 
     private String buildAuthMessage() {
@@ -37,10 +53,11 @@ public class ControlMessageSender {
         }
     }
 
-    private String buildSubscribeMessage(String params) {
+    private String buildSubscribeMessage(Set<String> channels) {
+        String channelsString = channels.stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
         ActionMessage actionMessage = ActionMessage.builder()
                 .action("subscribe")
-                .params(params)
+                .params(channelsString)
                 .build();
         try {
             return objectMapper.writeValueAsString(actionMessage);

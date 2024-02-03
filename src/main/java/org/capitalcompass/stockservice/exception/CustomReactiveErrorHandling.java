@@ -26,4 +26,10 @@ public class CustomReactiveErrorHandling {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.internalServerError().body(ex.getMessage());
     }
+
+    @ExceptionHandler(PolygonWebSocketStateException.class)
+    public ResponseEntity<String> handlePolygonWebSocketStateException(PolygonWebSocketStateException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.internalServerError().body(ex.getMessage());
+    }
 }

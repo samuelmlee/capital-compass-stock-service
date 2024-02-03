@@ -24,15 +24,18 @@ public class WebSocketDataHandler implements WebSocketHandler {
 
     private final DefaultMessageHandler defaultMessageHandler;
 
+    private final WebSocketSessionManager webSocketSessionManager;
+
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
+        webSocketSessionManager.setWebSocketSession(session);
         return session.receive().map(WebSocketMessage::getPayloadAsText).log()
                 .flatMap(messageString -> {
                     List<PolygonMessage> messages = messageParser.parse(messageString);
 
                     PolygonMessageHandler handler = resolveMessageHandler(messages.get(0).getEvent());
-                    return handler.handleMessages(messages, session);
+                    return handler.handleMessages(messages);
                 }).then();
     }
 

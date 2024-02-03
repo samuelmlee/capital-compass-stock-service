@@ -5,26 +5,26 @@ import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.api.StatusMessage;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 @Log4j2
 @RequiredArgsConstructor
 public class StatusMessageHandler implements PolygonMessageHandler {
 
-    private final ControlMessageSender controlMessageSender;
+    private final WebSocketSessionManager webSocketSessionManager;
 
     @Override
-    public Mono<Void> handleMessages(List<PolygonMessage> messages, WebSocketSession webSocketSession) {
+    public Mono<Void> handleMessages(List<PolygonMessage> messages) {
         StatusMessage statusMessage = (StatusMessage) messages.get(0);
         switch (statusMessage.getStatus()) {
             case "connected":
-                return handleConnectedStatus(webSocketSession);
+                return handleConnectedStatus();
             case "auth_success":
-                return handleAuthSuccessStatus(webSocketSession);
+                return handleAuthSuccessStatus();
             case "success":
                 return handleSubSuccessStatus();
             default:
@@ -32,14 +32,14 @@ public class StatusMessageHandler implements PolygonMessageHandler {
         }
     }
 
-    private Mono<Void> handleConnectedStatus(WebSocketSession webSocketSession) {
+    private Mono<Void> handleConnectedStatus() {
         log.debug("Connected with Polygon WebSocket API");
-        return controlMessageSender.sendAuthMessage(webSocketSession);
+        return webSocketSessionManager.sendAuthMessage();
     }
 
-    private Mono<Void> handleAuthSuccessStatus(WebSocketSession webSocketSession) {
+    private Mono<Void> handleAuthSuccessStatus() {
         log.debug("Authenticated with Polygon WebSocket API");
-        return controlMessageSender.sendSubscribeMessage(webSocketSession, "AM.LPL,AM.MSFT");
+        return webSocketSessionManager.sendSubscribeMessage(Set.of("LPL", "MSFT"));
     }
 
     private Mono<Void> handleSubSuccessStatus() {

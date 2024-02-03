@@ -1,13 +1,13 @@
 package org.capitalcompass.stockservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.capitalcompass.stockservice.handler.ControlMessageSender;
+import org.capitalcompass.stockservice.dto.SubscriptionMessageDTO;
+import org.capitalcompass.stockservice.handler.WebSocketSessionManager;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,17 +16,27 @@ public class TickerSubscriptionService {
 
     private final Map<String, Set<String>> clientSubscriptions = new HashMap<>();
 
-    private final ControlMessageSender controlMessageSender;
+    private final WebSocketSessionManager webSocketSessionManager;
 
-    public Mono<Void> updateClientSubscriptions(String message, String clientId) {
-        clientSubscriptions.putIfAbsent(clientId, Set.of(message));
-//        String channels = message.getSymbols().stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
-//        return controlMessageSender.sendSubscribeMessage(channels);
-        return Mono.empty();
+    public Mono<Void> updateClientSubscriptions(SubscriptionMessageDTO messageDTO, String clientId) {
+        clientSubscriptions.put(clientId, new HashSet<>(messageDTO.getSymbols()));
+        return sendSubscribeMessage();
     }
 
     public Mono<Void> removeClientSubscriptions(String clientId) {
         clientSubscriptions.remove(clientId);
-        return Mono.empty();
+        return sendSubscribeMessage();
+    }
+
+    private Mono<Void> sendSubscribeMessage() {
+        Set<String> currentSubscriptions = getAllSubscriptions(clientSubscriptions);
+        return webSocketSessionManager.sendSubscribeMessage(currentSubscriptions);
+    }
+
+
+    private Set<String> getAllSubscriptions(Map<String, Set<String>> subscriptions) {
+        Collection<Set<String>> allSubscriptions = subscriptions.values();
+        return allSubscriptions.stream().flatMap(Collection::stream).collect(Collectors.toSet());
+
     }
 }
