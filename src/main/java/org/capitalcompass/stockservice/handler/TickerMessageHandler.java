@@ -2,7 +2,9 @@ package org.capitalcompass.stockservice.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.capitalcompass.stockservice.api.PolygonMessage;
+import org.capitalcompass.stockservice.messaging.TickerMessageBroker;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -11,11 +13,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TickerMessageHandler implements PolygonMessageHandler {
 
-//    private final SimpMessagingTemplate messagingTemplate;
+    private final TickerMessageBroker tickerMessageBroker;
 
     @Override
     public Mono<Void> handleMessages(List<PolygonMessage> messages) {
-//        messagingTemplate.convertAndSend("/topic/ticker-price", messages);
-        return Mono.empty();
+        return Flux.fromIterable(messages).flatMap(tickerMessageBroker::publish).then();
     }
 }

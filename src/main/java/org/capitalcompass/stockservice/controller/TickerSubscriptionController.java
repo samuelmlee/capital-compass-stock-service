@@ -2,11 +2,13 @@ package org.capitalcompass.stockservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.dto.TickerSubscriptionMessageDTO;
+import org.capitalcompass.stockservice.messaging.TickerMessageBroker;
 import org.capitalcompass.stockservice.service.TickerSubscriptionService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.security.Principal;
 
@@ -17,9 +19,13 @@ public class TickerSubscriptionController {
 
     private final TickerSubscriptionService tickerSubscriptionService;
 
+    private final TickerMessageBroker tickerMessageBroker;
+
     @MessageMapping("/ticker-sub")
-    public Mono<Void> subscribeToTickers(TickerSubscriptionMessageDTO messageDTO, Principal principal) {
+    public Flux<PolygonMessage> subscribeToTickers(TickerSubscriptionMessageDTO messageDTO, Principal principal) {
         log.debug("Subscription Message: " + messageDTO);
-        return tickerSubscriptionService.updateClientSubscriptions(messageDTO, principal.getName());
+        return tickerSubscriptionService.updateClientSubscriptions(messageDTO, principal.getName())
+                .thenMany(tickerMessageBroker.subscribe());
+
     }
 }
