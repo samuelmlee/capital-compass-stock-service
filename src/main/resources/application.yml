@@ -13,6 +13,11 @@ spring:
     server:
       mapping-path: "/rsocket"
       transport: "websocket"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.base-url}/realms/${keycloak.realm}
 
 
 management:
