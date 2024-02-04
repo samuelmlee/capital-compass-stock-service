@@ -7,10 +7,10 @@ import org.capitalcompass.stockservice.dto.TickerSubscriptionMessageDTO;
 import org.capitalcompass.stockservice.messaging.TickerMessageBroker;
 import org.capitalcompass.stockservice.service.TickerSubscriptionService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
-
-import java.security.Principal;
 
 @Log4j2
 @Controller
@@ -21,11 +21,14 @@ public class TickerSubscriptionController {
 
     private final TickerMessageBroker tickerMessageBroker;
 
-    @MessageMapping("/ticker-sub")
-    public Flux<PolygonMessage> subscribeToTickers(TickerSubscriptionMessageDTO messageDTO, Principal principal) {
-        log.debug("Subscription Message: " + messageDTO);
-        return tickerSubscriptionService.updateClientSubscriptions(messageDTO, principal.getName())
-                .thenMany(tickerMessageBroker.subscribe());
-
+    @MessageMapping("ticker-sub")
+    public Flux<PolygonMessage> subscribeToTickers(TickerSubscriptionMessageDTO messageDTO) {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> (OidcUser) ctx.getAuthentication().getPrincipal())
+                .flatMapMany(oidcUser -> {
+                    log.debug("Subscription Message: " + messageDTO + ", User: " + oidcUser.getName());
+                    return tickerSubscriptionService.updateClientSubscriptions(messageDTO, oidcUser.getName())
+                            .thenMany(tickerMessageBroker.subscribe());
+                });
     }
 }
