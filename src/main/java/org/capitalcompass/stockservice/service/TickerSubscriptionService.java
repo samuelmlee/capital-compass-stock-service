@@ -18,8 +18,8 @@ public class TickerSubscriptionService {
 
     private final WebSocketSessionManager webSocketSessionManager;
 
-    public Mono<Void> updateClientSubscriptions(TickerSubscriptionMessageDTO messageDTO, String clientId) {
-        clientSubscriptions.put(clientId, new HashSet<>(messageDTO.getSymbols()));
+    public Mono<Void> updateClientSubscriptions(TickerSubscriptionMessageDTO messageDTO) {
+        clientSubscriptions.put(messageDTO.getUserId(), new HashSet<>(messageDTO.getSymbols()));
         return sendSubscribeMessage();
     }
 
