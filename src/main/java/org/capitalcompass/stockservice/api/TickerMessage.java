@@ -12,11 +12,9 @@ public class TickerMessage extends PolygonMessage {
 
     private String symbol;
 
-    private Integer volume;
+    private Integer accumulatedVolume;
 
-    private Integer openingTickPrice;
-
-    private Integer averagePrice;
+    private Integer volumeWeightedPrice;
 
     private Integer closingTickPrice;
 
@@ -30,34 +28,14 @@ public class TickerMessage extends PolygonMessage {
         this.symbol = symbol;
     }
 
-    @JsonProperty("volume")
-    public Integer getVolume() {
-        return volume;
+    @JsonProperty("accumulatedVolume")
+    public Integer getAccumulatedVolume() {
+        return accumulatedVolume;
     }
 
-    @JsonProperty("v")
-    public void setVolume(Integer volume) {
-        this.volume = volume;
-    }
-
-    @JsonProperty("openingTickPrice")
-    public Integer getOpeningTickPrice() {
-        return openingTickPrice;
-    }
-
-    @JsonProperty("o")
-    public void setOpeningTickPrice(Integer openingTickPrice) {
-        this.openingTickPrice = openingTickPrice;
-    }
-
-    @JsonProperty("averagePrice")
-    public Integer getAveragePrice() {
-        return averagePrice;
-    }
-
-    @JsonProperty("a")
-    public void setAveragePrice(Integer averagePrice) {
-        this.averagePrice = averagePrice;
+    @JsonProperty("av")
+    public void setAccumulatedVolume(Integer accumulatedVolume) {
+        this.accumulatedVolume = accumulatedVolume;
     }
 
     @JsonProperty("closingTickPrice")
@@ -68,6 +46,16 @@ public class TickerMessage extends PolygonMessage {
     @JsonProperty("c")
     public void setClosingTickPrice(Integer closingTickPrice) {
         this.closingTickPrice = closingTickPrice;
+    }
+
+    @JsonProperty("volumeWeightedPrice")
+    public Integer getVolumeWeightedPrice() {
+        return volumeWeightedPrice;
+    }
+
+    @JsonProperty("vw")
+    public void setVolumeWeightedPrice(Integer volumeWeightedPrice) {
+        this.volumeWeightedPrice = volumeWeightedPrice;
     }
 
 
