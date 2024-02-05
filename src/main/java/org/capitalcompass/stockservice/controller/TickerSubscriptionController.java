@@ -20,9 +20,11 @@ public class TickerSubscriptionController {
     private final TickerMessageBroker tickerMessageBroker;
 
     @MessageMapping("ticker-sub")
-    public Flux<TickerMessage> subscribeToTickers(TickerSubscriptionMessageDTO messageDTO) {
-        log.debug("Subscription Message: " + messageDTO);
-        return tickerSubscriptionService.updateClientSubscriptions(messageDTO)
-                .thenMany(tickerMessageBroker.subscribe());
+    public Flux<TickerMessage> subscribeToTickers(Flux<TickerSubscriptionMessageDTO> dtoFlux) {
+        return dtoFlux.flatMap(messageDTO -> {
+            log.debug("Subscription Message: " + messageDTO);
+            return tickerSubscriptionService.updateClientSubscriptions(messageDTO)
+                    .thenMany(tickerMessageBroker.subscribe());
+        });
     }
 }

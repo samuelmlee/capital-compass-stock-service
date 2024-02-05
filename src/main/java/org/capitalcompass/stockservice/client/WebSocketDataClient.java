@@ -6,8 +6,9 @@ import org.capitalcompass.stockservice.handler.WebSocketDataHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
-import reactor.core.publisher.Mono;
+import reactor.core.Disposable;
 
+import javax.annotation.PostConstruct;
 import java.net.URI;
 
 @Component
@@ -20,9 +21,10 @@ public class WebSocketDataClient {
     @Value("${polygon.websocket.url}")
     private String webSocketUrl;
 
-    public Mono<Void> connectAndAuthenticate() {
+    @PostConstruct
+    public Disposable connectAndAuthenticate() {
         return webSocketClient.execute(URI.create(webSocketUrl),
                 webSocketDataHandler
-        );
+        ).subscribe();
     }
 }

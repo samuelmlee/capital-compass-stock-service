@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -19,12 +18,8 @@ public class TickerMessageHandler implements PolygonMessageHandler {
 
     @Override
     public Mono<Void> handleMessages(List<PolygonMessage> messages) {
-        List<TickerMessage> tickerMessages = new ArrayList<>();
-        for (PolygonMessage message : messages) {
-            if (message instanceof TickerMessage) {
-                tickerMessages.add((TickerMessage) message);
-            }
-        }
-        return Flux.fromIterable(tickerMessages).flatMap(tickerMessageBroker::publish).then();
+        return Flux.fromIterable(messages)
+                .filter(polygonMessage -> polygonMessage instanceof TickerMessage)
+                .flatMap(tickerMessage -> tickerMessageBroker.publish((TickerMessage) tickerMessage)).then();
     }
 }
