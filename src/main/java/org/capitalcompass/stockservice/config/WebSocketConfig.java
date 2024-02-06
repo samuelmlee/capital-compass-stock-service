@@ -6,10 +6,17 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
+import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
 @Configuration
-public class WebSocketServerConfig {
+public class WebSocketConfig {
+
+    @Bean
+    public WebSocketClient webSocketClient() {
+        return new ReactorNettyWebSocketClient();
+    }
 
     @Bean
     public RSocketMessageHandler rsocketMessageHandler() {

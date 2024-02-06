@@ -3,6 +3,7 @@ package org.capitalcompass.stockservice.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.capitalcompass.stockservice.api.ActionMessage;
 import org.capitalcompass.stockservice.exception.PolygonWebSocketStateException;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,13 +22,10 @@ public class WebSocketSessionManager {
     @Value("${polygon.api.key}")
     private String polygonSecret;
 
+    @Setter
     private WebSocketSession webSocketSession;
 
-    public synchronized void setWebSocketSession(WebSocketSession webSocketSession) {
-        this.webSocketSession = webSocketSession;
-    }
-
-    public synchronized Mono<Void> sendAuthMessage() {
+    public Mono<Void> sendAuthMessage() {
         if (webSocketSession != null && webSocketSession.isOpen()) {
             return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildAuthMessage())));
         }
