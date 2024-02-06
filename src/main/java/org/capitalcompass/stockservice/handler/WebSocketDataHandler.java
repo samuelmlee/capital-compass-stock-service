@@ -10,7 +10,9 @@ import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.List;
 
 @Log4j2
@@ -32,7 +34,11 @@ public class WebSocketDataHandler implements WebSocketHandler {
     @Override
     public Mono<Void> handle(WebSocketSession session) {
         webSocketSessionManager.setWebSocketSession(session);
-        return session.receive().map(WebSocketMessage::getPayloadAsText).log()
+        return session.receive()
+                .retryWhen(Retry.backoff(2, Duration.ofSeconds(5))
+                        .doBeforeRetry(retrySignal -> log.info("Attempting to reconnect. Retry attempt: {}", retrySignal.totalRetries()))
+                )
+                .map(WebSocketMessage::getPayloadAsText).log()
                 .flatMap(messageString -> {
                     List<PolygonMessage> messages;
                     try {

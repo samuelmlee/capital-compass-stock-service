@@ -3,7 +3,9 @@ package org.capitalcompass.capitalcompassstocks.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.api.StatusMessage;
+import org.capitalcompass.stockservice.api.TickerMessage;
 import org.capitalcompass.stockservice.exception.PolygonMessageParsingException;
+import org.capitalcompass.stockservice.exception.PolygonMessageUnknownException;
 import org.capitalcompass.stockservice.handler.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -80,7 +83,7 @@ public class WebSocketDataHandlerTest {
     public void handleMessageUnknownOK() {
         WebSocketSession mockSession = mock(WebSocketSession.class);
         WebSocketMessage mockSocketMessage = mock(WebSocketMessage.class);
-        List<PolygonMessage> mockStatusMessages = List.of(new StatusMessage("Error", "Error", "Server Error"));
+        List<PolygonMessage> mockStatusMessages = List.of(new StatusMessage("Unknown Message", "Unknown", "Test Message"));
 
         when(mockSession.receive()).thenReturn(Flux.just(mockSocketMessage));
         when(mockSocketMessage.getPayloadAsText()).thenReturn("Error");
@@ -141,7 +144,7 @@ public class WebSocketDataHandlerTest {
         when(mockSocketMessage.getPayloadAsText()).thenReturn("Failure Message");
 
         when(messageParser.parse(anyString())).thenReturn(mockStatusMessages);
-        when(statusMessageHandler.handleMessages(anyList())).thenReturn(Mono.error(new RuntimeException("Handler failure")));
+        when(statusMessageHandler.handleMessages(anyList())).thenReturn(Mono.error(new PolygonMessageUnknownException("Handler failure")));
 
         Mono<Void> result = webSocketDataHandler.handle(mockSession);
 
@@ -152,5 +155,46 @@ public class WebSocketDataHandlerTest {
         verifyNoInteractions(tickerMessageHandler, defaultMessageHandler);
     }
 
+    @Test
+    public void handleMessageMultipleTickerMessagesOK() {
+        WebSocketSession mockSession = mock(WebSocketSession.class);
+        WebSocketMessage mockSocketMessage1 = mock(WebSocketMessage.class);
+        WebSocketMessage mockSocketMessage2 = mock(WebSocketMessage.class);
+        List<PolygonMessage> mockMessagesOne = List.of(TickerMessage.builder().event("AM").symbol("MSFT").build());
+        List<PolygonMessage> mockMessagesTwo = List.of(TickerMessage.builder().event("AM").symbol("AAPL").build());
+
+        when(mockSession.receive()).thenReturn(Flux.just(mockSocketMessage1, mockSocketMessage2));
+        when(mockSocketMessage1.getPayloadAsText()).thenReturn("First Ticker Message");
+        when(mockSocketMessage2.getPayloadAsText()).thenReturn("Second Ticker Message");
+
+        when(messageParser.parse(anyString())).thenReturn(mockMessagesOne)
+                .thenReturn(mockMessagesTwo);
+        when(tickerMessageHandler.handleMessages(anyList())).thenReturn(Mono.empty())
+                .thenReturn(Mono.empty());
+
+        Mono<Void> result = webSocketDataHandler.handle(mockSession);
+
+        StepVerifier.create(result).verifyComplete();
+        verify(webSocketSessionManager).setWebSocketSession(mockSession);
+        verify(tickerMessageHandler, times(1)).handleMessages(mockMessagesOne);
+        verify(tickerMessageHandler, times(1)).handleMessages(mockMessagesTwo);
+    }
+
+    @Test
+    public void handleMessageRetryExhaustedError() {
+        WebSocketSession mockSession = mock(WebSocketSession.class);
+
+        when(mockSession.receive())
+                .thenReturn(Flux.error(new RuntimeException("Connection error")));
+
+        Mono<Void> result = webSocketDataHandler.handle(mockSession);
+
+        StepVerifier.create(result)
+                .expectErrorSatisfies(e -> assertThat(e).isInstanceOf(RuntimeException.class)
+                        .hasMessage("Retries exhausted: 2/2")).verify();
+
+        verify(webSocketSessionManager, times(1)).setWebSocketSession(mockSession);
+        verifyNoInteractions(statusMessageHandler, tickerMessageHandler, defaultMessageHandler);
+    }
 
 }
