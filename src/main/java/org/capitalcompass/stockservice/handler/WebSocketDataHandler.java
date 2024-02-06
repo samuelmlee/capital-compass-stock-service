@@ -3,6 +3,8 @@ package org.capitalcompass.stockservice.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.PolygonMessage;
+import org.capitalcompass.stockservice.exception.PolygonMessageParsingException;
+import org.capitalcompass.stockservice.exception.PolygonMessageUnknownException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -32,11 +34,27 @@ public class WebSocketDataHandler implements WebSocketHandler {
         webSocketSessionManager.setWebSocketSession(session);
         return session.receive().map(WebSocketMessage::getPayloadAsText).log()
                 .flatMap(messageString -> {
-                    List<PolygonMessage> messages = messageParser.parse(messageString);
-
+                    List<PolygonMessage> messages;
+                    try {
+                        messages = messageParser.parse(messageString);
+                    } catch (PolygonMessageParsingException e) {
+                        log.error("Error parsing message: {}. Continuing with stream.", messageString, e);
+                        return Mono.empty();
+                    }
+                    if (messages != null && messages.isEmpty()) {
+                        return Mono.empty();
+                    }
                     PolygonMessageHandler handler = resolveMessageHandler(messages.get(0).getEvent());
                     return handler.handleMessages(messages);
-                }).then();
+                })
+                .onErrorContinue((throwable, o) -> {
+                    if (throwable instanceof PolygonMessageUnknownException) {
+                        log.error("Continuing after encountering Polygon unknown message: {}", throwable.getMessage());
+                    } else {
+                        log.error("Continuing after error: {}", throwable.getMessage());
+                    }
+                })
+                .then();
     }
 
     private PolygonMessageHandler resolveMessageHandler(String eventType) {

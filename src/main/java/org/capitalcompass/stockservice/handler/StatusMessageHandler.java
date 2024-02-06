@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.api.StatusMessage;
+import org.capitalcompass.stockservice.exception.PolygonMessageUnknownException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +50,6 @@ public class StatusMessageHandler implements PolygonMessageHandler {
 
     private Mono<Void> handleUnknownStatus(StatusMessage statusMessage) {
         log.error("Unexpected status received from Polygon WebSocket: {}", statusMessage.getStatus());
-        return Mono.error(new RuntimeException("Unexpected status: " + statusMessage.getStatus()));
+        return Mono.error(new PolygonMessageUnknownException("Unexpected status in message: " + statusMessage));
     }
 }
