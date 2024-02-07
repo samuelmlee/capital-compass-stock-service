@@ -1,6 +1,5 @@
 package org.capitalcompass.capitalcompassstocks.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.capitalcompass.stockservice.exception.PolygonWebSocketStateException;
 import org.capitalcompass.stockservice.handler.WebSocketSessionManager;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import reactor.test.StepVerifier;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,17 +22,16 @@ public class WebSocketSessionManagerTest {
     @Mock
     private WebSocketSession mockWebSocketSession;
 
-    @Mock
-    private ObjectMapper mockObjectMapper;
-
     @InjectMocks
     private WebSocketSessionManager webSocketSessionManager;
 
     @Test
-    public void sendAuthMessageSuccess() {
+    public void sendAuthMessageOK() {
+        String authMessage = "{\"action\":\"auth\",\"params\":null}";
+
         when(mockWebSocketSession.isOpen()).thenReturn(true);
         when(mockWebSocketSession.send(any(Mono.class))).thenReturn(Mono.empty());
-        when(mockWebSocketSession.textMessage(anyString())).thenReturn(mock(WebSocketMessage.class));
+        when(mockWebSocketSession.textMessage(authMessage)).thenReturn(mock(WebSocketMessage.class));
 
         StepVerifier.create(webSocketSessionManager.sendAuthMessage())
                 .verifyComplete();
@@ -53,6 +50,7 @@ public class WebSocketSessionManagerTest {
 
     @Test
     void sendSubscribeMessageOK() {
+
         when(mockWebSocketSession.isOpen()).thenReturn(true);
         when(mockWebSocketSession.send(any(Mono.class))).thenReturn(Mono.empty());
         when(mockWebSocketSession.textMessage(anyString())).thenReturn(mock(WebSocketMessage.class));

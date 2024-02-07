@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
@@ -20,7 +19,6 @@ public class TickerMessageBrokerTest {
     private TickerMessageBroker tickerMessageBroker;
     private Sinks.Many<TickerMessage> mockSink;
 
-    private Flux<TickerMessage> mockFlux;
 
     @BeforeEach
     public void setUp() {
