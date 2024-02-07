@@ -12,7 +12,10 @@ import java.util.List;
 public class DefaultMessageHandler implements PolygonMessageHandler {
     @Override
     public Mono<Void> handleMessages(List<PolygonMessage> messages) {
-        log.info("Unknown Polygon message :" + messages.toString());
+        if (messages.isEmpty()) {
+            return Mono.empty();
+        }
+        log.info("Unknown Polygon messages :" + messages);
         return Mono.empty();
     }
 }

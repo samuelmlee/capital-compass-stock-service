@@ -3,7 +3,7 @@ package org.capitalcompass.stockservice.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.capitalcompass.stockservice.api.PolygonMessage;
-import org.capitalcompass.stockservice.exception.PolygonMessageParsingException;
+import org.capitalcompass.stockservice.exception.PolygonMessageJsonParsingException;
 import org.capitalcompass.stockservice.exception.PolygonMessageUnknownException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
@@ -43,7 +43,7 @@ public class WebSocketDataHandler implements WebSocketHandler {
                     List<PolygonMessage> messages;
                     try {
                         messages = messageParser.parse(messageString);
-                    } catch (PolygonMessageParsingException e) {
+                    } catch (PolygonMessageJsonParsingException e) {
                         log.error("Error parsing message: {}. Continuing with stream.", messageString, e);
                         return Mono.empty();
                     }

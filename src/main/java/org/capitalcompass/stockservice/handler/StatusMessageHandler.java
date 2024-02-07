@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
 @Log4j2
@@ -20,6 +19,9 @@ public class StatusMessageHandler implements PolygonMessageHandler {
 
     @Override
     public Mono<Void> handleMessages(List<PolygonMessage> messages) {
+        if (messages.isEmpty()) {
+            return Mono.empty();
+        }
         StatusMessage statusMessage = (StatusMessage) messages.get(0);
         switch (statusMessage.getStatus()) {
             case "connected":
@@ -34,17 +36,17 @@ public class StatusMessageHandler implements PolygonMessageHandler {
     }
 
     private Mono<Void> handleConnectedStatus() {
-        log.debug("Connected with Polygon WebSocket API");
+        log.info("Connected with Polygon WebSocket API");
         return webSocketSessionManager.sendAuthMessage();
     }
 
     private Mono<Void> handleAuthSuccessStatus() {
-        log.debug("Authenticated with Polygon WebSocket API");
-        return webSocketSessionManager.sendSubscribeMessage(Set.of("LPL", "MSFT"));
+        log.info("Authenticated with Polygon WebSocket API");
+        return Mono.empty();
     }
 
     private Mono<Void> handleSubSuccessStatus() {
-        log.debug("Subscription successful with Polygon WebSocket API");
+        log.info("Subscription successful with Polygon WebSocket API");
         return Mono.empty();
     }
 

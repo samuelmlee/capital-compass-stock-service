@@ -18,6 +18,9 @@ public class TickerMessageHandler implements PolygonMessageHandler {
 
     @Override
     public Mono<Void> handleMessages(List<PolygonMessage> messages) {
+        if (messages.isEmpty()) {
+            return Mono.empty();
+        }
         return Flux.fromIterable(messages)
                 .filter(polygonMessage -> polygonMessage instanceof TickerMessage)
                 .flatMap(tickerMessage -> tickerMessageBroker.publish((TickerMessage) tickerMessage)).then();

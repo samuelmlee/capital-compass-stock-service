@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TickerSubscriptionService {
 
-
     private final Map<String, Set<String>> clientSubscriptions = new HashMap<>();
 
     private final WebSocketSessionManager webSocketSessionManager;

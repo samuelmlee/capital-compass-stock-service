@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.capitalcompass.stockservice.api.ActionMessage;
+import org.capitalcompass.stockservice.exception.PolygonMessageJsonWritingException;
 import org.capitalcompass.stockservice.exception.PolygonWebSocketStateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class WebSocketSessionManager {
         if (webSocketSession != null && webSocketSession.isOpen()) {
             return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildAuthMessage())));
         }
-        return Mono.error(new IllegalStateException("WebSocket session is not open or available."));
+        return Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available."));
     }
 
     public synchronized Mono<Void> sendSubscribeMessage(Set<String> channels) {
@@ -47,7 +48,7 @@ public class WebSocketSessionManager {
         try {
             return objectMapper.writeValueAsString(actionMessage);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error creating auth message", e);
+            throw new PolygonMessageJsonWritingException("Error creating auth message", e);
         }
     }
 
@@ -60,7 +61,7 @@ public class WebSocketSessionManager {
         try {
             return objectMapper.writeValueAsString(actionMessage);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error creating subscribe message", e);
+            throw new PolygonMessageJsonWritingException("Error creating subscribe message", e);
         }
     }
 }

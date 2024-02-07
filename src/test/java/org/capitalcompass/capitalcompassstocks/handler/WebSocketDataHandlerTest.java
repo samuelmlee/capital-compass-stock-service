@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.capitalcompass.stockservice.api.PolygonMessage;
 import org.capitalcompass.stockservice.api.StatusMessage;
 import org.capitalcompass.stockservice.api.TickerMessage;
-import org.capitalcompass.stockservice.exception.PolygonMessageParsingException;
+import org.capitalcompass.stockservice.exception.PolygonMessageJsonParsingException;
 import org.capitalcompass.stockservice.exception.PolygonMessageUnknownException;
 import org.capitalcompass.stockservice.handler.*;
 import org.junit.jupiter.api.Test;
@@ -107,7 +107,7 @@ public class WebSocketDataHandlerTest {
         when(mockSession.receive()).thenReturn(Flux.just(mockSocketMessage));
         when(mockSocketMessage.getPayloadAsText()).thenReturn("Unknown format");
 
-        when(messageParser.parse(anyString())).thenThrow(new PolygonMessageParsingException("Parsing failed", mockJsonException));
+        when(messageParser.parse(anyString())).thenThrow(new PolygonMessageJsonParsingException("Parsing failed", mockJsonException));
 
         Mono<Void> result = webSocketDataHandler.handle(mockSession);
 
