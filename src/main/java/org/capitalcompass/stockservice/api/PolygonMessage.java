@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "ev", visible = true)
 @JsonSubTypes({
+        @JsonSubTypes.Type(value = TickerMessage.class, name = "A"),
         @JsonSubTypes.Type(value = TickerMessage.class, name = "AM"),
         @JsonSubTypes.Type(value = StatusMessage.class, name = "status")
 })

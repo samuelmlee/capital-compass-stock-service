@@ -67,6 +67,7 @@ public class WebSocketDataHandler implements WebSocketHandler {
         switch (eventType) {
             case "status":
                 return statusMessageHandler;
+            case "A":
             case "AM":
                 return tickerMessageHandler;
             default:
