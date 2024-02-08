@@ -38,7 +38,11 @@ public class TickerSubscriptionController {
         return dtoFlux.flatMap(messageDTO -> {
             log.debug("Subscription Message: " + messageDTO);
             return tickerSubscriptionService.updateClientSubscriptions(messageDTO)
-                    .thenMany(tickerMessageBroker.subscribe());
+                    .thenMany(tickerMessageBroker.subscribe())
+                    .doOnCancel(() -> {
+                        tickerSubscriptionService.removeClientSubscriptions(messageDTO.getUserId())
+                                .thenMany(Flux.empty()).subscribe();
+                    });
         });
     }
 }

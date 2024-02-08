@@ -55,7 +55,7 @@ public class WebSocketSessionManagerTest {
         when(mockWebSocketSession.send(any(Mono.class))).thenReturn(Mono.empty());
         when(mockWebSocketSession.textMessage(anyString())).thenReturn(mock(WebSocketMessage.class));
 
-        StepVerifier.create(webSocketSessionManager.sendSubscribeMessage(Set.of("AAPL", "MSFT")))
+        StepVerifier.create(webSocketSessionManager.sendSubscriptionMessage(Set.of("AAPL", "MSFT"), "subscribe"))
                 .verifyComplete();
 
         verify(mockWebSocketSession, times(1)).send(any());
@@ -65,7 +65,7 @@ public class WebSocketSessionManagerTest {
     void sendSubscribeMessageFailure() {
         when(mockWebSocketSession.isOpen()).thenReturn(false);
 
-        StepVerifier.create(webSocketSessionManager.sendSubscribeMessage(Set.of("AAPL", "MSFT")))
+        StepVerifier.create(webSocketSessionManager.sendSubscriptionMessage(Set.of("AAPL", "MSFT"), "subscribe"))
                 .expectError(PolygonWebSocketStateException.class)
                 .verify();
     }

@@ -33,12 +33,12 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscribeMessage(symbols)).thenReturn(Mono.empty());
+        when(webSocketSessionManager.sendSubscriptionMessage(symbols, "subscribe")).thenReturn(Mono.empty());
 
         StepVerifier.create(tickerSubscriptionService.updateClientSubscriptions(messageDTO))
                 .verifyComplete();
 
-        verify(webSocketSessionManager, times(1)).sendSubscribeMessage(symbols);
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
     }
 
     @Test
@@ -49,7 +49,7 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscribeMessage(symbols)).thenReturn(Mono.error(
+        when(webSocketSessionManager.sendSubscriptionMessage(symbols, "subscribe")).thenReturn(Mono.error(
                 new PolygonWebSocketStateException("WebSocket session is not open or available.")));
 
         StepVerifier.create(tickerSubscriptionService.updateClientSubscriptions(messageDTO))
@@ -65,15 +65,15 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscribeMessage(anySet())).thenReturn(Mono.empty());
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), "subscribe")).thenReturn(Mono.empty());
 
         tickerSubscriptionService.updateClientSubscriptions(messageDTO).subscribe();
 
         StepVerifier.create(tickerSubscriptionService.removeClientSubscriptions("user1"))
                 .verifyComplete();
 
-        verify(webSocketSessionManager, times(1)).sendSubscribeMessage(symbols);
-        verify(webSocketSessionManager, times(1)).sendSubscribeMessage(Set.of());
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(Set.of(), "subscribe");
     }
 
     @Test
@@ -84,7 +84,7 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscribeMessage(anySet()))
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), "subscribe"))
                 .thenReturn(Mono.empty())
                 .thenReturn(Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available.")));
 
@@ -94,7 +94,7 @@ public class TickerSubscriptionServiceTest {
                 .expectErrorMatches(throwable -> throwable instanceof PolygonWebSocketStateException)
                 .verify();
 
-        verify(webSocketSessionManager, times(2)).sendSubscribeMessage(anySet());
+        verify(webSocketSessionManager, times(2)).sendSubscriptionMessage(anySet(), "subscribe");
     }
 
 

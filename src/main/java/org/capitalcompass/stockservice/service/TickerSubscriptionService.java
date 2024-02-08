@@ -49,8 +49,9 @@ public class TickerSubscriptionService {
      * @return A Mono<Void> indicating the completion of the removal process.
      */
     public Mono<Void> removeClientSubscriptions(String clientId) {
-        clientSubscriptions.remove(clientId);
-        return sendSubscribeMessage();
+        return sendUnSubscribeMessage(clientId).then(Mono.fromRunnable(() ->
+                clientSubscriptions.remove(clientId)
+        ));
     }
 
     /**
@@ -61,7 +62,12 @@ public class TickerSubscriptionService {
      */
     private Mono<Void> sendSubscribeMessage() {
         Set<String> currentSubscriptions = getAllSubscriptions(clientSubscriptions);
-        return webSocketSessionManager.sendSubscribeMessage(currentSubscriptions);
+        return webSocketSessionManager.sendSubscriptionMessage(currentSubscriptions, "subscribe");
+    }
+
+    private Mono<Void> sendUnSubscribeMessage(String clientId) {
+        Set<String> subscriptionsToCancel = clientSubscriptions.get(clientId);
+        return webSocketSessionManager.sendSubscriptionMessage(subscriptionsToCancel, "unsubscribe");
     }
 
     /**

@@ -33,9 +33,9 @@ public class WebSocketSessionManager {
         return Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available."));
     }
 
-    public synchronized Mono<Void> sendSubscribeMessage(Set<String> channels) {
+    public synchronized Mono<Void> sendSubscriptionMessage(Set<String> channels, String action) {
         if (webSocketSession != null && webSocketSession.isOpen()) {
-            return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildSubscribeMessage(channels))));
+            return webSocketSession.send(Mono.just(webSocketSession.textMessage(buildSubscriptionMessage(channels, action))));
         }
         return Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available."));
     }
@@ -52,10 +52,10 @@ public class WebSocketSessionManager {
         }
     }
 
-    private String buildSubscribeMessage(Set<String> channels) {
+    private String buildSubscriptionMessage(Set<String> channels, String action) {
         String channelsString = channels.stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
         ActionMessage actionMessage = ActionMessage.builder()
-                .action("subscribe")
+                .action(action)
                 .params(channelsString)
                 .build();
         try {
