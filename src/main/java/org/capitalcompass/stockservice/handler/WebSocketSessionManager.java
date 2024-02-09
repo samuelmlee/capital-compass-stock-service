@@ -53,7 +53,7 @@ public class WebSocketSessionManager {
     }
 
     private String buildSubscriptionMessage(Set<String> channels, String action) {
-        String channelsString = channels.stream().map(symbol -> "AM." + symbol).collect(Collectors.joining(","));
+        String channelsString = channels.stream().map(symbol -> "A." + symbol).collect(Collectors.joining(","));
         ActionMessage actionMessage = ActionMessage.builder()
                 .action(action)
                 .params(channelsString)
