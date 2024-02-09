@@ -43,15 +43,14 @@ public class TickerSubscriptionService {
     }
 
     /**
-     * Removes all subscriptions for a specific client based on their client ID.
+     * Removes all subscriptions for a specific client based on their client ID and sends an unsubscribe message.
      *
      * @param clientId The ID of the client whose subscriptions are to be removed.
      * @return A Mono<Void> indicating the completion of the removal process.
      */
     public Mono<Void> removeClientSubscriptions(String clientId) {
-        return sendUnSubscribeMessage(clientId).then(Mono.fromRunnable(() ->
-                clientSubscriptions.remove(clientId)
-        ));
+        Set<String> subscriptionsRemoved = clientSubscriptions.remove(clientId);
+        return sendUnsubscribeMessage(subscriptionsRemoved);
     }
 
     /**
@@ -61,23 +60,33 @@ public class TickerSubscriptionService {
      * @return A Mono<Void> indicating the completion of the send process.
      */
     private Mono<Void> sendSubscribeMessage() {
-        Set<String> currentSubscriptions = getAllSubscriptions(clientSubscriptions);
+        Set<String> currentSubscriptions = getAllSubscriptions();
         return webSocketSessionManager.sendSubscriptionMessage(currentSubscriptions, "subscribe");
     }
 
-    private Mono<Void> sendUnSubscribeMessage(String clientId) {
-        Set<String> subscriptionsToCancel = clientSubscriptions.get(clientId);
-        return webSocketSessionManager.sendSubscriptionMessage(subscriptionsToCancel, "unsubscribe");
+    /**
+     * Sends an unsubscribe message for the specified ticker symbols.
+     * <p>
+     * Filters out any ticker symbols that are not currently subscribed to before sending the unsubscribe message.
+     * This ensures that only relevant subscriptions are considered for unsubscription.
+     *
+     * @param subscriptionsRemoved A set of ticker symbols to unsubscribe from.
+     * @return A Mono<Void> signaling completion when the unsubscribe message is sent, or an error if sending fails.
+     */
+    private Mono<Void> sendUnsubscribeMessage(Set<String> subscriptionsRemoved) {
+        Set<String> otherSubscriptions = getAllSubscriptions();
+        Set<String> unsubscribedSubscriptions = subscriptionsRemoved.stream().filter(sub -> !otherSubscriptions.contains(sub)).collect(Collectors.toSet());
+
+        return webSocketSessionManager.sendSubscriptionMessage(unsubscribedSubscriptions, "unsubscribe");
     }
 
     /**
      * Aggregates all subscriptions from all clients into a single set of ticker symbols.
      *
-     * @param subscriptions A map of client IDs to their set of subscribed ticker symbols.
      * @return A set containing all unique ticker symbols that any client has subscribed to.
      */
-    private Set<String> getAllSubscriptions(Map<String, Set<String>> subscriptions) {
-        Collection<Set<String>> allSubscriptions = subscriptions.values();
+    private Set<String> getAllSubscriptions() {
+        Collection<Set<String>> allSubscriptions = clientSubscriptions.values();
         return allSubscriptions.stream().flatMap(Collection::stream).collect(Collectors.toSet());
 
     }

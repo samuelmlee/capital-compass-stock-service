@@ -65,15 +65,16 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), "subscribe")).thenReturn(Mono.empty());
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString())).thenReturn(Mono.empty());
 
-        tickerSubscriptionService.updateClientSubscriptions(messageDTO).subscribe();
+        Mono<Void> result = tickerSubscriptionService.updateClientSubscriptions(messageDTO)
+                .then(tickerSubscriptionService.removeClientSubscriptions("user1"));
 
-        StepVerifier.create(tickerSubscriptionService.removeClientSubscriptions("user1"))
+        StepVerifier.create(result)
                 .verifyComplete();
 
         verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
-        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(Set.of(), "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "unsubscribe");
     }
 
     @Test
@@ -84,17 +85,19 @@ public class TickerSubscriptionServiceTest {
                 .symbols(symbols)
                 .build();
 
-        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), "subscribe"))
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString()))
                 .thenReturn(Mono.empty())
                 .thenReturn(Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available.")));
 
-        tickerSubscriptionService.updateClientSubscriptions(messageDTO).subscribe();
+        Mono<Void> result = tickerSubscriptionService.updateClientSubscriptions(messageDTO).then(
+                tickerSubscriptionService.removeClientSubscriptions("user1"));
 
-        StepVerifier.create(tickerSubscriptionService.updateClientSubscriptions(messageDTO))
+        StepVerifier.create(result)
                 .expectErrorMatches(throwable -> throwable instanceof PolygonWebSocketStateException)
                 .verify();
 
-        verify(webSocketSessionManager, times(2)).sendSubscriptionMessage(anySet(), "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "unsubscribe");
     }
 
 

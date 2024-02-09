@@ -25,13 +25,27 @@ public class TickerSubscriptionController {
     private final TickerMessageBroker tickerMessageBroker;
 
     /**
-     * Subscribes to ticker updates based on the provided subscription messages.
-     * For each subscription message received, this method updates client subscriptions
-     * and subscribes to the ticker updates from the message broker.
+     * Handles subscription requests for ticker updates. Each incoming subscription request is
+     * processed to update client subscriptions, and subsequently, a stream of {@link TickerMessage}
+     * objects is emitted to the subscriber, providing real-time updates on tickers of interest.
      *
-     * @param dtoFlux A {@link Flux} stream of {@link TickerSubscriptionMessageDTO} objects representing
-     *                subscription messages from clients.
-     * @return A {@link Flux} stream of {@link TickerMessage} objects containing the ticker updates for subscribed tickers.
+     * @param dtoFlux A {@link Flux}<{@link TickerSubscriptionMessageDTO}> representing a stream of
+     *                subscription messages from clients. Each {@link TickerSubscriptionMessageDTO}
+     *                contains details such as the client's user ID and a list of ticker symbols
+     *                the client wishes to subscribe to for updates.
+     * @return A {@link Flux}<{@link TickerMessage}> stream that emits ticker updates to subscribed
+     * clients. Each {@link TickerMessage} contains the updated information for a specific
+     * ticker symbol.
+     * <p>
+     * The method invokes {@link TickerSubscriptionService#updateClientSubscriptions(TickerSubscriptionMessageDTO)}
+     * to update the client's subscriptions based on the received DTO. After the subscriptions are
+     * updated, it subscribes to the ticker updates through {@link TickerMessageBroker#subscribe()},
+     * which returns a Flux of {@link TickerMessage} to be sent back to the client.
+     * <p>
+     * The {@code doFinally} operator is used to perform cleanup actions when the Flux sequence
+     * terminates for any reason (complete, error, or cancel). In this case, it unsubscribes the client
+     * from the ticker updates by calling
+     * {@link TickerSubscriptionService#removeClientSubscriptions(String)} with the client's user ID.
      */
     @MessageMapping("ticker-sub")
     public Flux<TickerMessage> subscribeToTickers(Flux<TickerSubscriptionMessageDTO> dtoFlux) {
@@ -39,10 +53,7 @@ public class TickerSubscriptionController {
             log.debug("Subscription Message: " + messageDTO);
             return tickerSubscriptionService.updateClientSubscriptions(messageDTO)
                     .thenMany(tickerMessageBroker.subscribe())
-                    .doOnCancel(() -> {
-                        tickerSubscriptionService.removeClientSubscriptions(messageDTO.getUserId())
-                                .thenMany(Flux.empty()).subscribe();
-                    });
+                    .doFinally((signalType) -> tickerSubscriptionService.removeClientSubscriptions(messageDTO.getUserId()).subscribe());
         });
     }
 }
