@@ -38,8 +38,50 @@ public class TickerSubscriptionService {
      * @return A Mono<Void> indicating the completion of the subscription update process.
      */
     public Mono<Void> updateClientSubscriptions(TickerSubscriptionMessageDTO messageDTO) {
-        clientSubscriptions.put(messageDTO.getUserId(), new HashSet<>(messageDTO.getSymbols()));
-        return sendSubscribeMessage();
+        String userId = messageDTO.getUserId();
+        Set<String> newSubscriptions = new HashSet<>(messageDTO.getSymbols());
+
+        Set<String> existingSubscriptions = clientSubscriptions.getOrDefault(userId, Collections.emptySet());
+
+        Set<String> toUnsubscribe = existingSubscriptions.stream()
+                .filter(ticker -> !newSubscriptions.contains(ticker))
+                .collect(Collectors.toSet());
+
+
+        Set<String> toSubscribe = newSubscriptions.stream()
+                .filter(ticker -> !existingSubscriptions.contains(ticker))
+                .collect(Collectors.toSet());
+
+        clientSubscriptions.put(userId, newSubscriptions);
+
+        Mono<Void> unsubscribeMono = unsubscribeIfNotSubscribed(userId, toUnsubscribe);
+
+        Mono<Void> subscribeMono = subscribeIfNotSubscribed(userId, toSubscribe);
+        return Mono.when(unsubscribeMono, subscribeMono);
+    }
+
+    private Mono<Void> subscribeIfNotSubscribed(String userId, Set<String> toSubscribe) {
+        Set<String> confirmedTickerSubscribed = toSubscribe.stream()
+                .filter(subscription -> isSubscriptionUniqueToUser(subscription, userId))
+                .collect(Collectors.toSet());
+
+        return webSocketSessionManager.sendSubscriptionMessage(confirmedTickerSubscribed, "subscribe");
+
+    }
+
+    private Mono<Void> unsubscribeIfNotSubscribed(String userId, Set<String> toUnsubscribe) {
+        Set<String> confirmedTickerUnsubscribed = toUnsubscribe.stream()
+                .filter(subscription -> isSubscriptionUniqueToUser(subscription, userId))
+                .collect(Collectors.toSet());
+
+        return webSocketSessionManager.sendSubscriptionMessage(confirmedTickerUnsubscribed, "unsubscribe");
+
+    }
+
+    private boolean isSubscriptionUniqueToUser(String ticker, String userId) {
+        return clientSubscriptions.entrySet().stream()
+                .filter(entry -> !entry.getKey().equals(userId))
+                .noneMatch(entry -> entry.getValue().contains(ticker));
     }
 
     /**
