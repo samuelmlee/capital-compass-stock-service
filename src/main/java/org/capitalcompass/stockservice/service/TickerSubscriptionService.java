@@ -99,11 +99,15 @@ public class TickerSubscriptionService {
      * count was initialized to 1, indicating that they were not previously subscribed to.
      */
     private Set<String> incrementSubCountPerTicker(Set<String> newSubscriptions) {
+        if (newSubscriptions.isEmpty()) {
+            return Collections.emptySet();
+        }
+
         Set<String> newSubscribed = new HashSet<>();
 
         newSubscriptions.forEach(ticker -> {
             subCountPerTicker.compute(ticker, (k, v) -> {
-                if (v == null) {
+                if (v == null || v == 0) {
                     newSubscribed.add(ticker);
                     return 1;
                 } else {
@@ -128,6 +132,9 @@ public class TickerSubscriptionService {
      * method call. These are the tickers whose subscription count reached 0 after being decremented.
      */
     private Set<String> decrementSubCountPerTicker(Set<String> existingSubscriptions) {
+        if (existingSubscriptions.isEmpty()) {
+            return Collections.emptySet();
+        }
         Set<String> newUnsubscribed = new HashSet<>();
 
         existingSubscriptions.forEach(ticker -> {
@@ -150,6 +157,9 @@ public class TickerSubscriptionService {
      */
     public Mono<Void> removeClientSubscriptions(String clientId) {
         Set<String> subscriptionsRemoved = subscriptionsPerClient.remove(clientId);
+        if (subscriptionsRemoved == null) {
+            return Mono.empty();
+        }
         Set<String> symbolsUnsubscribed = decrementSubCountPerTicker(subscriptionsRemoved);
         return sendUnsubscribeMessage(symbolsUnsubscribed);
     }
@@ -161,6 +171,9 @@ public class TickerSubscriptionService {
      * @return A Mono<Void> indicating the completion of the send process.
      */
     private Mono<Void> sendSubscribeMessage(Set<String> subscriptionsAdded) {
+        if (subscriptionsAdded.isEmpty()) {
+            return Mono.empty();
+        }
         return webSocketSessionManager.sendSubscriptionMessage(subscriptionsAdded, "subscribe");
     }
 
@@ -174,6 +187,9 @@ public class TickerSubscriptionService {
      * @return A Mono<Void> signaling completion when the unsubscribe message is sent, or an error if sending fails.
      */
     private Mono<Void> sendUnsubscribeMessage(Set<String> subscriptionsRemoved) {
+        if (subscriptionsRemoved.isEmpty()) {
+            return Mono.empty();
+        }
         return webSocketSessionManager.sendSubscriptionMessage(subscriptionsRemoved, "unsubscribe");
     }
 
