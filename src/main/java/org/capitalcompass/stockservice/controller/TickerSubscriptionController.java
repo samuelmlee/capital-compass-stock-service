@@ -37,7 +37,7 @@ public class TickerSubscriptionController {
      * clients. Each {@link TickerMessage} contains the updated information for a specific
      * ticker symbol.
      * <p>
-     * The method invokes {@link TickerSubscriptionService#updateClientSubscriptions(TickerSubscriptionMessageDTO)}
+     * The method invokes {@link TickerSubscriptionService#updateSubscriptionsPerClient(TickerSubscriptionMessageDTO)}
      * to update the client's subscriptions based on the received DTO. After the subscriptions are
      * updated, it subscribes to the ticker updates through {@link TickerMessageBroker#subscribe()},
      * which returns a Flux of {@link TickerMessage} to be sent back to the client.
@@ -51,7 +51,7 @@ public class TickerSubscriptionController {
     public Flux<TickerMessage> subscribeToTickers(Flux<TickerSubscriptionMessageDTO> dtoFlux) {
         return dtoFlux.flatMap(messageDTO -> {
             log.debug("Subscription Message: " + messageDTO);
-            return tickerSubscriptionService.updateClientSubscriptions(messageDTO)
+            return tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO)
                     .thenMany(tickerMessageBroker.subscribe())
                     .doFinally((signalType) -> tickerSubscriptionService.removeClientSubscriptions(messageDTO.getUserId()).subscribe());
         });

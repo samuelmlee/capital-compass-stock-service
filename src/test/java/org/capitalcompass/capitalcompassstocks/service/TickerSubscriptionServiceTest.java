@@ -35,7 +35,7 @@ public class TickerSubscriptionServiceTest {
 
         when(webSocketSessionManager.sendSubscriptionMessage(symbols, "subscribe")).thenReturn(Mono.empty());
 
-        StepVerifier.create(tickerSubscriptionService.updateClientSubscriptions(messageDTO))
+        StepVerifier.create(tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO))
                 .verifyComplete();
 
         verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
@@ -52,7 +52,7 @@ public class TickerSubscriptionServiceTest {
         when(webSocketSessionManager.sendSubscriptionMessage(symbols, "subscribe")).thenReturn(Mono.error(
                 new PolygonWebSocketStateException("WebSocket session is not open or available.")));
 
-        StepVerifier.create(tickerSubscriptionService.updateClientSubscriptions(messageDTO))
+        StepVerifier.create(tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO))
                 .expectErrorMatches(throwable -> throwable instanceof PolygonWebSocketStateException)
                 .verify();
     }
@@ -67,7 +67,7 @@ public class TickerSubscriptionServiceTest {
 
         when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString())).thenReturn(Mono.empty());
 
-        Mono<Void> result = tickerSubscriptionService.updateClientSubscriptions(messageDTO)
+        Mono<Void> result = tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO)
                 .then(tickerSubscriptionService.removeClientSubscriptions("user1"));
 
         StepVerifier.create(result)
@@ -89,7 +89,7 @@ public class TickerSubscriptionServiceTest {
                 .thenReturn(Mono.empty())
                 .thenReturn(Mono.error(new PolygonWebSocketStateException("WebSocket session is not open or available.")));
 
-        Mono<Void> result = tickerSubscriptionService.updateClientSubscriptions(messageDTO).then(
+        Mono<Void> result = tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO).then(
                 tickerSubscriptionService.removeClientSubscriptions("user1"));
 
         StepVerifier.create(result)
