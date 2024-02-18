@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
@@ -98,6 +99,53 @@ public class TickerSubscriptionServiceTest {
 
         verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "subscribe");
         verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(symbols, "unsubscribe");
+    }
+
+    @Test
+    public void updateClientSubscriptionsDecrementOK() {
+        Set<String> symbols = Set.of("MSFT");
+
+        TickerSubscriptionMessageDTO firstMessageDTO = TickerSubscriptionMessageDTO.builder()
+                .userId("user1")
+                .symbols(symbols)
+                .build();
+
+        TickerSubscriptionMessageDTO secondMessageDTO = TickerSubscriptionMessageDTO.builder()
+                .userId("user1")
+                .symbols(Collections.emptySet())
+                .build();
+
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString())).thenReturn(Mono.empty());
+
+        Mono<Void> result = tickerSubscriptionService.updateSubscriptionsPerClient(firstMessageDTO).then(
+                tickerSubscriptionService.updateSubscriptionsPerClient(secondMessageDTO));
+
+        StepVerifier.create(result)
+                .verifyComplete();
+
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(Set.of("MSFT"), "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(Set.of("MSFT"), "unsubscribe");
+    }
+
+
+    @Test
+    public void updateClientSubscriptionsSameDtoOK() {
+        Set<String> symbols = Set.of("AAPL");
+        TickerSubscriptionMessageDTO messageDTO = TickerSubscriptionMessageDTO.builder()
+                .userId("user1")
+                .symbols(symbols)
+                .build();
+
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString())).thenReturn(Mono.empty());
+
+        Mono<Void> result = tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO).then(
+                tickerSubscriptionService.updateSubscriptionsPerClient(messageDTO));
+
+        StepVerifier.create(result)
+                .verifyComplete();
+
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(anySet(), eq("subscribe"));
+        verify(webSocketSessionManager, never()).sendSubscriptionMessage(anySet(), eq("unsubscribe"));
     }
 
 
