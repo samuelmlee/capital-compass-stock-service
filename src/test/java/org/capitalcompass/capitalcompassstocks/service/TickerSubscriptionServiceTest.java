@@ -102,6 +102,32 @@ public class TickerSubscriptionServiceTest {
     }
 
     @Test
+    public void updateClientSubscriptionsNewDtoOK() {
+        Set<String> initialSymbols = Set.of("AAPL");
+        Set<String> newSymbols = Set.of("GOOGL", "MSFT");
+        TickerSubscriptionMessageDTO initialDTO = TickerSubscriptionMessageDTO.builder()
+                .userId("user1")
+                .symbols(initialSymbols)
+                .build();
+        TickerSubscriptionMessageDTO newDTO = TickerSubscriptionMessageDTO.builder()
+                .userId("user1")
+                .symbols(newSymbols)
+                .build();
+
+        when(webSocketSessionManager.sendSubscriptionMessage(anySet(), anyString())).thenReturn(Mono.empty());
+
+        Mono<Void> initialUpdate = tickerSubscriptionService.updateSubscriptionsPerClient(initialDTO);
+        Mono<Void> newUpdate = tickerSubscriptionService.updateSubscriptionsPerClient(newDTO);
+
+        StepVerifier.create(initialUpdate.then(newUpdate))
+                .verifyComplete();
+
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(initialSymbols, "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(newSymbols, "subscribe");
+        verify(webSocketSessionManager, times(1)).sendSubscriptionMessage(initialSymbols, "unsubscribe");
+    }
+
+    @Test
     public void updateClientSubscriptionsDecrementOK() {
         Set<String> symbols = Set.of("MSFT");
 
