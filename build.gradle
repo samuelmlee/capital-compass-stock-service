@@ -45,6 +45,8 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
+    implementation 'org.flywaydb:flyway-core:8.2.0'
+    implementation 'mysql:mysql-connector-java:8.0.33'
 
     implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.7.0'
 

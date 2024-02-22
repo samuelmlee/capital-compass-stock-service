@@ -18,6 +18,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${keycloak.base-url}/realms/${keycloak.realm}
+  flyway:
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: ${spring.jdbc.url}
 
 
 management:
@@ -36,6 +40,6 @@ management:
 logging:
   level:
     #        org.springframework.security: TRACE
-    #        root: DEBUG
+    #    root: DEBUG
     org.springframework.data: DEBUG
     io.r2dbc: DEBUG
