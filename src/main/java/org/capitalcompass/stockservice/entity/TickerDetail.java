@@ -24,11 +24,9 @@ public class TickerDetail {
     private String currencyName;
     private String type;
     private String description;
-    private Long marketCap;
     private String homePageUrl;
     private Integer totalEmployees;
     private String listDate;
-    private Long shareClassSharesOutstanding;
-    private Long weightedSharesOutstanding;
+
 
 }
