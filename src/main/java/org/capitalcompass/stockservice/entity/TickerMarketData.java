@@ -4,8 +4,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Generated;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Data
 @Builder
@@ -15,13 +16,13 @@ public class TickerMarketData {
     @Generated
     private Long id;
 
-    private Date date;
+    private Timestamp updatedTimestamp;
 
     private Long marketCap;
     private Long shareClassSharesOutstanding;
     private Long weightedSharesOutstanding;
 
-    @ManyToOne
-    private TickerDetail tickerDetail;
+    @Column("ticker_detail_id")
+    private Long tickerDetailId;
 
 }

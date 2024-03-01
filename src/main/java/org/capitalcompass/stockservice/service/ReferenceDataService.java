@@ -239,12 +239,9 @@ public class ReferenceDataService {
                 .currencyName(result.getCurrencyName())
                 .type(result.getType())
                 .description(result.getDescription())
-                .marketCap(result.getMarketCap())
                 .homePageUrl(result.getHomePageUrl())
                 .totalEmployees(result.getTotalEmployees())
                 .listDate(result.getListDate())
-                .shareClassSharesOutstanding(result.getShareClassSharesOutstanding())
-                .weightedSharesOutstanding(result.getWeightedSharesOutstanding())
                 .build();
     }
 }
