@@ -27,10 +27,8 @@ public class MarketDataUpdateService {
     public Mono<Void> updateTickerMarketData() {
         return tickerDetailRepository.findAll()
                 .map(tickerDetail -> new TickerMarketDataInput(tickerDetail.getSymbol(), tickerDetail.getId()))
-                .flatMap(tickerMarketDataInput -> {
-                    return referenceDataClient.getTickerDetails(tickerMarketDataInput.getSymbol())
-                            .flatMap(tickerDetailResponse -> buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerMarketDataInput.getTickerDetailId()));
-                })
+                .flatMap(tickerMarketDataInput -> referenceDataClient.getTickerDetails(tickerMarketDataInput.getSymbol())
+                        .flatMap(tickerDetailResponse -> buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerMarketDataInput.getTickerDetailId())))
                 .collectList().flatMapMany(tickerMarketDataList -> {
                     return tickerMarketDataRepository.saveAll(tickerMarketDataList);
                 }).then();
