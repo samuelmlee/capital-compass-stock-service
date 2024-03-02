@@ -4,10 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Generated;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 
 import javax.validation.constraints.Size;
-import java.util.List;
 
 @Data
 @Builder
@@ -30,8 +28,8 @@ public class TickerDetail {
     private Integer totalEmployees;
     private String listDate;
 
-    @Transient
-    private List<TickerMarketData> tickerMarketDataList;
+//    @Transient
+//    private List<TickerMarketData> tickerMarketDataList;
 
 
 }

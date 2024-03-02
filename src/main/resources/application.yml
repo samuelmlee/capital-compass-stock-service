@@ -1,6 +1,11 @@
 server:
   port: 8083
 
+market-data:
+  daily:
+    cron: 0 00 15 * * MON-FRI
+
+
 spring:
   application:
     name: stocks
@@ -41,5 +46,5 @@ logging:
   level:
     #        org.springframework.security: TRACE
     #    root: DEBUG
-    org.springframework.data: DEBUG
-    io.r2dbc: DEBUG
+    org.springframework.data: TRACE
+    io.r2dbc: TRACE

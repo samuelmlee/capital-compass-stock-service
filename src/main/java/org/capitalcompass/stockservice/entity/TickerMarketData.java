@@ -6,7 +6,7 @@ import lombok.Generated;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class TickerMarketData {
     @Generated
     private Long id;
 
-    private Timestamp updatedTimestamp;
+    private Instant updatedTimestamp;
 
     private Long marketCap;
     private Long shareClassSharesOutstanding;
