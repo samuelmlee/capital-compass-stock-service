@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
 import org.capitalcompass.stockservice.entity.TickerMarketData;
-import org.capitalcompass.stockservice.model.TickerMarketDataInput;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.repository.TickerMarketDataRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,9 +25,8 @@ public class MarketDataUpdateService {
     @Scheduled(cron = "@daily")
     public Mono<Void> updateTickerMarketData() {
         return tickerDetailRepository.findAll()
-                .map(tickerDetail -> new TickerMarketDataInput(tickerDetail.getSymbol(), tickerDetail.getId()))
-                .flatMap(tickerMarketDataInput -> referenceDataClient.getTickerDetails(tickerMarketDataInput.getSymbol())
-                        .flatMap(tickerDetailResponse -> buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerMarketDataInput.getTickerDetailId())))
+                .flatMap(tickerDetail -> referenceDataClient.getTickerDetails(tickerDetail.getSymbol())
+                        .flatMap(tickerDetailResponse -> buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerDetail.getId())))
                 .collectList().flatMapMany(tickerMarketDataList -> {
                     return tickerMarketDataRepository.saveAll(tickerMarketDataList);
                 }).then();
