@@ -9,4 +9,7 @@ import reactor.core.publisher.Mono;
 public interface TickerDetailRepository extends ReactiveCrudRepository<TickerDetail, Long> {
 
     Mono<TickerDetail> findBySymbol(String tickerSymbol);
+
+    
+    Mono<Void> deleteDuplicateTickerDetail();
 }

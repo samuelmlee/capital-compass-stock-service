@@ -24,14 +24,17 @@ public class MarketDataUpdateService {
     private final TickerMarketDataRepository tickerMarketDataRepository;
 
 
-    @Scheduled(cron = "${market-data.daily.cron}")
+    @Scheduled(cron = "${market-data.fetch-cron}")
     public Disposable saveLatestTickerMarketData() {
         return tickerDetailRepository.findAll()
                 .flatMap(tickerDetail -> referenceDataClient.getTickerDetails(tickerDetail.getSymbol())
                         .flatMap(tickerDetailResponse -> buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerDetail.getId())))
-                .collectList().flatMapMany(tickerMarketDataList -> {
-                    return tickerMarketDataRepository.saveAll(tickerMarketDataList);
-                }).subscribe();
+                .collectList().flatMapMany(tickerMarketDataRepository::saveAll).subscribe();
+    }
+
+    @Scheduled(cron = "${delete-duplicates-cron}")
+    public Disposable deleteDuplicateTickerMarketData() {
+        return tickerDetailRepository.deleteDuplicateTickerDetail().subscribe();
     }
 
     private Mono<TickerMarketData> buildTickerMarketDataFromResponse(TickerDetailResult result, Long tickerDetailId) {
