@@ -2,8 +2,8 @@ server:
   port: 8083
 
 market-data:
-  fetch-cron: 0 00 15 * * MON-FRI
-  delete-duplicates-cron: 0 00 15 * * SAT
+  fetch-cron: 0 00 17 * * MON-FRI
+  delete-duplicates-cron: 0 30 17 * * MON-FRI
 
 
 spring:

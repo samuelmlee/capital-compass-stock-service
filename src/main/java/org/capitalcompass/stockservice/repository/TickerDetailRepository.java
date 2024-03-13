@@ -10,6 +10,4 @@ public interface TickerDetailRepository extends ReactiveCrudRepository<TickerDet
 
     Mono<TickerDetail> findBySymbol(String tickerSymbol);
 
-    
-    Mono<Void> deleteDuplicateTickerDetail();
 }

@@ -32,9 +32,9 @@ public class MarketDataUpdateService {
                 .collectList().flatMapMany(tickerMarketDataRepository::saveAll).subscribe();
     }
 
-    @Scheduled(cron = "${delete-duplicates-cron}")
+    @Scheduled(cron = "${market-data.delete-duplicates-cron}")
     public Disposable deleteDuplicateTickerMarketData() {
-        return tickerDetailRepository.deleteDuplicateTickerDetail().subscribe();
+        return tickerMarketDataRepository.deleteDuplicateTickerDetail().subscribe();
     }
 
     private Mono<TickerMarketData> buildTickerMarketDataFromResponse(TickerDetailResult result, Long tickerDetailId) {
