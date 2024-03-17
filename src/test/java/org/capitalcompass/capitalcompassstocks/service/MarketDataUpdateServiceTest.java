@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.ConnectException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,7 +82,6 @@ public class MarketDataUpdateServiceTest {
                 .thenReturn(Mono.just(mockAppleResponse));
         when(tickerMarketDataRepository.saveAll(any(Iterable.class))).thenReturn(Flux.empty());
 
-
         marketDataUpdateService.saveLatestTickerMarketData();
 
         verify(tickerDetailRepository, times(1)).findAll();
@@ -103,13 +103,25 @@ public class MarketDataUpdateServiceTest {
     void saveLatestTickerMarketDataEmptyListOK() {
 
         when(tickerDetailRepository.findAll()).thenReturn(Flux.empty());
+
         marketDataUpdateService.saveLatestTickerMarketData();
 
         verify(tickerDetailRepository, times(1)).findAll();
 
         verify(referenceDataClient, never()).getTickerDetails(any());
         verify(tickerMarketDataRepository, never()).saveAll(any(Iterable.class));
+    }
 
+    @Test
+    void saveLatestTickerMarketDataFindAllError() {
+        when(tickerDetailRepository.findAll())
+                .thenReturn(Flux.error(new ConnectException("Database error")));
+
+        marketDataUpdateService.saveLatestTickerMarketData();
+
+        verify(tickerDetailRepository, times(1)).findAll();
+        verifyNoMoreInteractions(referenceDataClient);
+        verifyNoMoreInteractions(tickerMarketDataRepository);
     }
 
 

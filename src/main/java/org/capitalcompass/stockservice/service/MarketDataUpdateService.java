@@ -7,8 +7,6 @@ import org.capitalcompass.stockservice.client.ReferenceDataClient;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.entity.TickerMarketData;
 import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
-import org.capitalcompass.stockservice.exception.TickerDetailRepositoryException;
-import org.capitalcompass.stockservice.exception.TickerMarketDataRepositoryException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.repository.TickerMarketDataRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,18 +33,34 @@ public class MarketDataUpdateService {
     @Scheduled(cron = "${market-data.fetch-cron}")
     public Disposable saveLatestTickerMarketData() {
         return tickerDetailRepository.findAll()
-                .onErrorResume(e -> Mono.error(new TickerDetailRepositoryException("Error getting all ticker details ")))
+                .onErrorResume(this::handleTickerDetailRepositoryException)
                 .flatMap(this::fetchAndBuildTickerMarketData)
                 .collectList().flatMapMany(this::saveAllMarketData)
-                .onErrorResume(e -> Mono.error(new TickerMarketDataRepositoryException("Error saving all ticker market data")))
+                .onErrorResume(this::handleTickerMarketDataRepositoryException)
                 .subscribe();
     }
+
 
     @Scheduled(cron = "${market-data.delete-duplicates-cron}")
     public Disposable deleteDuplicateTickerMarketData() {
         return tickerMarketDataRepository.deleteDuplicateTickerDetail()
-                .onErrorResume(e -> Mono.error(new TickerMarketDataRepositoryException("Error deleting market data duplicates")))
+                .onErrorResume(this::handleTickerMarketDataRepositoryDeleteException)
                 .subscribe();
+    }
+
+    private Flux<TickerDetail> handleTickerDetailRepositoryException(Throwable e) {
+        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+        return Flux.empty();
+    }
+
+    private Flux<TickerMarketData> handleTickerMarketDataRepositoryException(Throwable e) {
+        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+        return Flux.empty();
+    }
+
+    private Mono<Void> handleTickerMarketDataRepositoryDeleteException(Throwable e) {
+        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+        return Mono.empty();
     }
 
     private Mono<TickerMarketData> fetchAndBuildTickerMarketData(TickerDetail tickerDetail) {
@@ -62,7 +76,6 @@ public class MarketDataUpdateService {
             return Flux.empty();
         } else {
             return tickerMarketDataRepository.saveAll(tickerMarketDataList);
-
         }
     }
 
