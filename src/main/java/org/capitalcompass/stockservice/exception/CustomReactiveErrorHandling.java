@@ -32,10 +32,4 @@ public class CustomReactiveErrorHandling {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.internalServerError().body(ex.getMessage());
     }
-
-    @ExceptionHandler(TickerMarketDataRepositoryException.class)
-    public ResponseEntity<String> handleTickerMarketDataRepositoryException(TickerMarketDataRepositoryException ex) {
-        log.error(ex.getMessage(), ex);
-        return ResponseEntity.internalServerError().body(ex.getMessage());
-    }
 }

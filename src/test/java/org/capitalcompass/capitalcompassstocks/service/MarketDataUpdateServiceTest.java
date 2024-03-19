@@ -5,6 +5,7 @@ import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.entity.TickerMarketData;
+import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.repository.TickerMarketDataRepository;
 import org.capitalcompass.stockservice.service.MarketDataUpdateService;
@@ -15,18 +16,21 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.ConnectException;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
 public class MarketDataUpdateServiceTest {
 
     @Captor
@@ -113,7 +117,7 @@ public class MarketDataUpdateServiceTest {
     }
 
     @Test
-    void saveLatestTickerMarketDataFindAllError() {
+    void saveLatestTickerMarketDataFindAllError(CapturedOutput output) {
         when(tickerDetailRepository.findAll())
                 .thenReturn(Flux.error(new ConnectException("Database error")));
 
@@ -122,6 +126,31 @@ public class MarketDataUpdateServiceTest {
         verify(tickerDetailRepository, times(1)).findAll();
         verifyNoMoreInteractions(referenceDataClient);
         verifyNoMoreInteractions(tickerMarketDataRepository);
+
+        assertThat(output.getOut()).contains("Error fetching all Ticker Detail");
+    }
+
+    @Test
+    void saveLatestTickerMarketDataFetchDetailError(CapturedOutput output) {
+        TickerDetail mockTeslaDetail = TickerDetail.builder()
+                .id(1L)
+                .symbol("TSLA")
+                .build();
+
+        marketDataUpdateService.saveLatestTickerMarketData();
+
+        when(tickerDetailRepository.findAll()).thenReturn(Flux.just(mockTeslaDetail));
+        when(referenceDataClient.getTickerDetails(anyString()))
+                .thenReturn(Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker Details")));
+        when(tickerMarketDataRepository.saveAll(any(Iterable.class))).thenReturn(Flux.empty());
+
+        marketDataUpdateService.saveLatestTickerMarketData();
+
+        verify(tickerDetailRepository, times(1)).findAll();
+        verify(referenceDataClient, times(1)).getTickerDetails(anyString());
+        verify(tickerMarketDataRepository, never()).saveAll(any(Iterable.class));
+
+        assertThat(output.getOut()).contains("Error getting ticker details for symbol");
     }
 
 

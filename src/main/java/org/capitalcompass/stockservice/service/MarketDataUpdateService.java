@@ -36,7 +36,7 @@ public class MarketDataUpdateService {
                 .onErrorResume(this::handleTickerDetailRepositoryException)
                 .flatMap(this::fetchAndBuildTickerMarketData)
                 .collectList().flatMapMany(this::saveAllMarketData)
-                .onErrorResume(this::handleTickerMarketDataRepositoryException)
+                .onErrorResume(this::handleTickerMarketDataRepositorySaveAllException)
                 .subscribe();
     }
 
@@ -49,23 +49,23 @@ public class MarketDataUpdateService {
     }
 
     private Flux<TickerDetail> handleTickerDetailRepositoryException(Throwable e) {
-        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+        log.error("Error fetching all Ticker Detail at {} : {}", Instant.now(), e.getMessage());
         return Flux.empty();
     }
 
-    private Flux<TickerMarketData> handleTickerMarketDataRepositoryException(Throwable e) {
-        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+    private Flux<TickerMarketData> handleTickerMarketDataRepositorySaveAllException(Throwable e) {
+        log.error("Error saving all Ticker Market Data at {} : {}", Instant.now(), e.getMessage());
         return Flux.empty();
     }
 
     private Mono<Void> handleTickerMarketDataRepositoryDeleteException(Throwable e) {
-        log.error("Error fetching all ticker detail at {} : {}", Instant.now(), e.getMessage());
+        log.error("Error deleting duplicate Ticker Market Data  at {} : {}", Instant.now(), e.getMessage());
         return Mono.empty();
     }
 
     private Mono<TickerMarketData> fetchAndBuildTickerMarketData(TickerDetail tickerDetail) {
         return referenceDataClient.getTickerDetails(tickerDetail.getSymbol())
-                .onErrorResume(e -> Mono.error(new PolygonClientErrorException("Error ticker details for symbol :" + tickerDetail.getSymbol())))
+                .onErrorResume(e -> Mono.error(new PolygonClientErrorException("Error getting ticker details for symbol :" + tickerDetail.getSymbol())))
                 .flatMap(tickerDetailResponse -> tickerDetailResponse.getResults() == null ? Mono.empty() :
                         buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerDetail.getId())
                 );
