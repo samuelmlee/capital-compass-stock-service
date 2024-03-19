@@ -2,11 +2,11 @@ package org.capitalcompass.stockservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.capitalcompass.stockservice.api.TickerDetailResponse;
 import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.entity.TickerMarketData;
-import org.capitalcompass.stockservice.exception.PolygonClientErrorException;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.repository.TickerMarketDataRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -65,10 +65,15 @@ public class MarketDataUpdateService {
 
     private Mono<TickerMarketData> fetchAndBuildTickerMarketData(TickerDetail tickerDetail) {
         return referenceDataClient.getTickerDetails(tickerDetail.getSymbol())
-                .onErrorResume(e -> Mono.error(new PolygonClientErrorException("Error getting ticker details for symbol :" + tickerDetail.getSymbol())))
+                .onErrorResume(e -> handleGetTickerDetailsException(e, tickerDetail.getSymbol()))
                 .flatMap(tickerDetailResponse -> tickerDetailResponse.getResults() == null ? Mono.empty() :
                         buildTickerMarketDataFromResponse(tickerDetailResponse.getResults(), tickerDetail.getId())
                 );
+    }
+
+    private Mono<TickerDetailResponse> handleGetTickerDetailsException(Throwable e, String symbol) {
+        log.error("Error getting ticker details for symbol: {} , Exception : {}", symbol, e.getMessage());
+        return Mono.empty();
     }
 
     private Flux<TickerMarketData> saveAllMarketData(List<TickerMarketData> tickerMarketDataList) {

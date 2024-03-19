@@ -137,18 +137,53 @@ public class MarketDataUpdateServiceTest {
                 .symbol("TSLA")
                 .build();
 
-        marketDataUpdateService.saveLatestTickerMarketData();
-
         when(tickerDetailRepository.findAll()).thenReturn(Flux.just(mockTeslaDetail));
         when(referenceDataClient.getTickerDetails(anyString()))
                 .thenReturn(Mono.error(new PolygonClientErrorException("A network error occurred getting Ticker Details")));
-        when(tickerMarketDataRepository.saveAll(any(Iterable.class))).thenReturn(Flux.empty());
 
         marketDataUpdateService.saveLatestTickerMarketData();
 
         verify(tickerDetailRepository, times(1)).findAll();
         verify(referenceDataClient, times(1)).getTickerDetails(anyString());
         verify(tickerMarketDataRepository, never()).saveAll(any(Iterable.class));
+
+        assertThat(output.getOut()).contains("Error getting ticker details for symbol");
+    }
+
+    @Test
+    void saveLatestTickerMarketDataFetchDetailPartialError(CapturedOutput output) {
+        TickerDetail mockTeslaDetail = TickerDetail.builder()
+                .id(1L)
+                .symbol("TSLA")
+                .build();
+
+        TickerDetail mockAppleDetail = TickerDetail.builder()
+                .id(2L)
+                .symbol("AAPL")
+                .build();
+
+        TickerDetailResult mockTeslaResult = TickerDetailResult.builder()
+                .symbol("TSLA")
+                .marketCap(10L)
+                .shareClassSharesOutstanding(10L)
+                .weightedSharesOutstanding(10L)
+                .build();
+
+        TickerDetailResponse mockTeslaResponse = TickerDetailResponse.builder()
+                .results(mockTeslaResult)
+                .build();
+
+        when(tickerDetailRepository.findAll()).thenReturn(Flux.just(mockTeslaDetail, mockAppleDetail));
+
+        when(referenceDataClient.getTickerDetails(anyString()))
+                .thenReturn(Mono.just(mockTeslaResponse))
+                .thenReturn(Mono.error(new PolygonClientErrorException("WebClientResponseException occurred getting Ticker Details")));
+
+        marketDataUpdateService.saveLatestTickerMarketData();
+
+        verify(tickerDetailRepository, times(1)).findAll();
+        verify(referenceDataClient, times(2)).getTickerDetails(anyString());
+        verify(tickerMarketDataRepository, times(1)).saveAll(any(Iterable.class));
 
         assertThat(output.getOut()).contains("Error getting ticker details for symbol");
     }
