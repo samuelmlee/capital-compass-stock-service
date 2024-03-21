@@ -241,5 +241,24 @@ public class MarketDataUpdateServiceTest {
         assertThat(output.getOut()).contains("Error saving all Ticker Market Data");
     }
 
+    @Test
+    public void deleteDuplicateTickerMarketDataOK() {
+        when(tickerMarketDataRepository.deleteDuplicateTickerDetail()).thenReturn(Mono.empty());
+
+        marketDataUpdateService.deleteDuplicateTickerMarketData();
+
+        verify(tickerMarketDataRepository, times(1)).deleteDuplicateTickerDetail();
+    }
+
+    @Test
+    public void deleteDuplicateTickerMarketDataError(CapturedOutput output) {
+        when(tickerMarketDataRepository.deleteDuplicateTickerDetail()).thenReturn(Mono.error(new DataIntegrityViolationException("Error")));
+
+        marketDataUpdateService.deleteDuplicateTickerMarketData();
+
+        verify(tickerMarketDataRepository, times(1)).deleteDuplicateTickerDetail();
+        assertThat(output.getOut()).contains("Error deleting duplicate Ticker Market Data");
+    }
+
 
 }
