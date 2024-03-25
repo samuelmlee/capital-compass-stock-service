@@ -2,6 +2,7 @@ package org.capitalcompass.stockservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.capitalcompass.stockservice.api.TickerDetailResponse;
 import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
@@ -31,6 +32,7 @@ public class MarketDataUpdateService {
 
 
     @Scheduled(cron = "${market-data.fetch-cron}")
+    @SchedulerLock(name = "saveLatestMarketData")
     public Disposable saveLatestTickerMarketData() {
         return tickerDetailRepository.findAll()
                 .onErrorResume(this::handleTickerDetailRepositoryException)
@@ -42,6 +44,7 @@ public class MarketDataUpdateService {
 
 
     @Scheduled(cron = "${market-data.delete-duplicates-cron}")
+    @SchedulerLock(name = "deleteDuplicateMarketData")
     public Disposable deleteDuplicateTickerMarketData() {
         return tickerMarketDataRepository.deleteDuplicateTickerDetail()
                 .onErrorResume(this::handleTickerMarketDataRepositoryDeleteException)

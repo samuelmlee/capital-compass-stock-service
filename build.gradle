@@ -47,6 +47,8 @@ dependencies {
     implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
     implementation 'org.flywaydb:flyway-core:8.2.0'
     implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:4.47.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-r2dbc:4.47.0'
 
     implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.7.0'
 
