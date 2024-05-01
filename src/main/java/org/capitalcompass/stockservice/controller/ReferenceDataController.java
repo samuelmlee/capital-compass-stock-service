@@ -7,8 +7,8 @@ import org.capitalcompass.stockservice.service.ReferenceDataService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Set;
 
 /**

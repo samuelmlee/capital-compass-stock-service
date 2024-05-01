@@ -8,7 +8,7 @@ import org.capitalcompass.stockservice.service.MarketDataService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Set;
 
 /**

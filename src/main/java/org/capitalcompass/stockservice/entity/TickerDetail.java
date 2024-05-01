@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.Generated;
 import org.springframework.data.annotation.Id;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 @Data
 @Builder
