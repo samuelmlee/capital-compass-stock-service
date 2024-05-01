@@ -22,6 +22,9 @@ public class WebSocketSessionManager {
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Value("${polygon.api.key}")
     private String polygonSecret;
+    
+    @Value("${ticker.frequency}")
+    private String tickerFrequency;
 
     @Setter
     private WebSocketSession webSocketSession;
@@ -53,7 +56,7 @@ public class WebSocketSessionManager {
     }
 
     private String buildSubscriptionMessage(Set<String> channels, String action) {
-        String channelsString = channels.stream().map(symbol -> "A." + symbol).collect(Collectors.joining(","));
+        String channelsString = channels.stream().map(symbol -> tickerFrequency + "." + symbol).collect(Collectors.joining(","));
         ActionMessage actionMessage = ActionMessage.builder()
                 .action(action)
                 .params(channelsString)

@@ -5,6 +5,9 @@ market-data:
   fetch-cron: 0 00 17 * * MON-FRI
   delete-duplicates-cron: 0 30 17 * * MON-FRI
 
+ticker:
+  frequency: "AM"
+
 
 spring:
   application:
