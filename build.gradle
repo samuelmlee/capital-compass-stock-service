@@ -44,7 +44,7 @@ dependencies {
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-    implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
+    implementation 'io.asyncer:r2dbc-mysql:1.0.0'
     implementation 'org.flywaydb:flyway-core:8.2.0'
     implementation 'mysql:mysql-connector-java:8.0.33'
     implementation 'net.javacrumbs.shedlock:shedlock-spring:4.47.0'
@@ -68,6 +68,10 @@ dependencyManagement {
 
 tasks.named('bootBuildImage') {
     builder = 'paketobuildpacks/builder-jammy-base:latest'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.named('test') {

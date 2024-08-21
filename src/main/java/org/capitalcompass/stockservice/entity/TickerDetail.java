@@ -1,11 +1,11 @@
 package org.capitalcompass.stockservice.entity;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Generated;
 import org.springframework.data.annotation.Id;
 
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Generated;
 
 @Data
 @Builder
@@ -23,6 +23,8 @@ public class TickerDetail {
     private String primaryExchange;
     private String currencyName;
     private String type;
+
+	@Size(max = 500)
     private String description;
     private String homePageUrl;
     private Integer totalEmployees;

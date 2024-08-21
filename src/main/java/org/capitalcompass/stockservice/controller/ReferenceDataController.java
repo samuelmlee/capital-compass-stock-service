@@ -1,15 +1,28 @@
 package org.capitalcompass.stockservice.controller;
 
 
-import lombok.RequiredArgsConstructor;
-import org.capitalcompass.stockservice.dto.*;
+import java.util.Set;
+
+import org.capitalcompass.stockservice.dto.TickerDetailDTO;
+import org.capitalcompass.stockservice.dto.TickerNewsDTO;
+import org.capitalcompass.stockservice.dto.TickerRequestDTO;
+import org.capitalcompass.stockservice.dto.TickerSymbolDTO;
+import org.capitalcompass.stockservice.dto.TickerTypesDTO;
+import org.capitalcompass.stockservice.dto.TickersDTO;
+import org.capitalcompass.stockservice.dto.TickersSearchConfigDTO;
 import org.capitalcompass.stockservice.service.ReferenceDataService;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 /**
  * REST controller for handling reference data operations related to tickers.
@@ -84,7 +97,7 @@ public class ReferenceDataController {
      * @return A Mono of TickerNewsDTO containing the list of news articles.
      */
     @GetMapping("/news")
-    public Mono<TickerNewsDTO> getTickerNews(@RequestParam(required = false) String ticker) {
+	public Mono<TickerNewsDTO> getTickerNews(@RequestParam(required = false) String ticker) {
         return referenceDataService.getTickerNews(ticker);
     }
 }
