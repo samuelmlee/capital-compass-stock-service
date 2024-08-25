@@ -5,12 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import io.r2dbc.spi.ConnectionFactory;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.r2dbc.R2dbcLockProvider;
+
 @Configuration
-public class FlywayConfig {
+public class MigrationAndLockProviderConfig {
 
     private final Environment env;
 
-    public FlywayConfig(final Environment env) {
+
+	public MigrationAndLockProviderConfig(final Environment env) {
         this.env = env;
     }
 
@@ -24,4 +29,9 @@ public class FlywayConfig {
                         env.getRequiredProperty("spring.flyway.password"))
         );
     }
+
+	@Bean
+	public LockProvider lockProvider(ConnectionFactory connectionFactory) {
+		return new R2dbcLockProvider(connectionFactory);
+	}
 }

@@ -1,23 +1,25 @@
 package org.capitalcompass.stockservice.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import java.time.Instant;
+import java.util.List;
+
 import org.capitalcompass.stockservice.api.TickerDetailResponse;
 import org.capitalcompass.stockservice.api.TickerDetailResult;
 import org.capitalcompass.stockservice.client.ReferenceDataClient;
+import org.capitalcompass.stockservice.config.MarketDataCronProperties;
 import org.capitalcompass.stockservice.entity.TickerDetail;
 import org.capitalcompass.stockservice.entity.TickerMarketData;
 import org.capitalcompass.stockservice.repository.TickerDetailRepository;
 import org.capitalcompass.stockservice.repository.TickerMarketDataRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.List;
 
 @Service
 @Log4j2
@@ -30,8 +32,10 @@ public class MarketDataUpdateService {
 
     private final TickerMarketDataRepository tickerMarketDataRepository;
 
+	private final MarketDataCronProperties marketDataCronProperties;
 
-    @Scheduled(cron = "${market-data.fetch-cron}")
+
+	@Scheduled(cron = "#{@marketDataCronProperties.fetchCron}")
     @SchedulerLock(name = "saveLatestMarketData")
     public Disposable saveLatestTickerMarketData() {
         return tickerDetailRepository.findAll()
@@ -43,7 +47,7 @@ public class MarketDataUpdateService {
     }
 
 
-    @Scheduled(cron = "${market-data.delete-duplicates-cron}")
+	@Scheduled(cron = "#{@marketDataCronProperties.deleteDuplicatesCron}")
     @SchedulerLock(name = "deleteDuplicateMarketData")
     public Disposable deleteDuplicateTickerMarketData() {
         return tickerMarketDataRepository.deleteDuplicateTickerDetail()

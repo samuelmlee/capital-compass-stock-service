@@ -45,10 +45,10 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'io.asyncer:r2dbc-mysql:1.0.0'
-    implementation 'org.flywaydb:flyway-core:8.2.0'
     implementation 'mysql:mysql-connector-java:8.0.33'
-    implementation 'net.javacrumbs.shedlock:shedlock-spring:4.47.0'
-    implementation 'net.javacrumbs.shedlock:shedlock-provider-r2dbc:4.47.0'
+    implementation 'org.flywaydb:flyway-core:8.2.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:5.15.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-r2dbc:5.15.0'
 
     implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.7.0'
 
